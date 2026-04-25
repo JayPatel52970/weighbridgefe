@@ -1,0 +1,120 @@
+<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+
+  <div class="sidebar-brand">
+    <a routerLink="/dashboard" class="brand-link">
+      <i class="bi bi-truck brand-image opacity-75 shadow ms-3 me-2" style="font-size:1.5rem"></i>
+      <span class="brand-text fw-light">Weighbridge</span>
+    </a>
+  </div>
+
+  <div class="sidebar-wrapper">
+
+    @if (auth.snapshot; as profile) {
+      <div class="mt-3 mb-2 px-3">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-person-circle fs-4 me-2 text-white"></i>
+          <div>
+            <div class="text-white fw-semibold small">{{ profile.username }}</div>
+            <div>
+              @for (r of profile.roles; track r) {
+                <span class="badge bg-secondary me-1" style="font-size:.65rem">{{ r }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <nav class="mt-2">
+      <ul class="nav sidebar-menu flex-column"
+          data-lte-toggle="treeview"
+          role="navigation"
+          aria-label="Main navigation"
+          data-accordion="false">
+
+        <li class="nav-item">
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+            <i class="nav-icon bi bi-speedometer2"></i>
+            <p>Dashboard</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a routerLink="/weighment/first" routerLinkActive="active" class="nav-link">
+            <i class="nav-icon bi bi-plus-circle"></i>
+            <p>New Weighment <span class="badge bg-info float-end">F1</span></p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a routerLink="/weighment/second" routerLinkActive="active" class="nav-link">
+            <i class="nav-icon bi bi-clipboard-check"></i>
+            <p>Second Weighment <span class="badge bg-info float-end">F2</span></p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a routerLink="/reports" routerLinkActive="active" class="nav-link">
+            <i class="nav-icon bi bi-bar-chart"></i>
+            <p>Reports</p>
+          </a>
+        </li>
+
+        @if (isAdmin) {
+          <li class="nav-header">ADMIN</li>
+
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon bi bi-database"></i>
+              <p>Master Data <i class="nav-arrow bi bi-chevron-right"></i></p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a routerLink="/master/vehicles" routerLinkActive="active" class="nav-link">
+                  <i class="nav-icon bi bi-truck"></i><p>Vehicles</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a routerLink="/master/clients" routerLinkActive="active" class="nav-link">
+                  <i class="nav-icon bi bi-building"></i><p>Clients</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a routerLink="/master/materials" routerLinkActive="active" class="nav-link">
+                  <i class="nav-icon bi bi-box"></i><p>Materials</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
+            <a routerLink="/admin/settings" routerLinkActive="active" class="nav-link">
+              <i class="nav-icon bi bi-gear"></i><p>Settings</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/admin/charge-slabs" routerLinkActive="active" class="nav-link">
+              <i class="nav-icon bi bi-coin"></i><p>Charge Slabs</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/admin/cameras" routerLinkActive="active" class="nav-link">
+              <i class="nav-icon bi bi-camera"></i><p>Camera Settings</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">
+              <i class="nav-icon bi bi-people"></i><p>Users</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/admin/uploads" routerLinkActive="active" class="nav-link">
+              <i class="nav-icon bi bi-upload"></i><p>Uploads</p>
+            </a>
+          </li>
+        }
+
+      </ul>
+    </nav>
+  </div>
+</aside>

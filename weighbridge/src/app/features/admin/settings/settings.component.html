@@ -1,0 +1,77 @@
+<div class="mb-3"><h1 class="h3"><i class="bi bi-gear me-2"></i>Site Settings</h1></div>
+
+@if (loading) {
+  <div class="text-center p-4"><div class="spinner-border text-primary"></div></div>
+} @else {
+  <div class="card">
+    <div class="card-body">
+      @if (success) {
+        <div class="alert alert-success">Settings saved successfully.</div>
+      }
+      @if (error) {
+        <div class="alert alert-danger">{{ error }}</div>
+      }
+
+      <div class="row g-4">
+        <div class="col-md-6">
+          <h5 class="mb-3">Ticket Numbering</h5>
+          <div class="mb-3">
+            <label class="form-label">Ticket Prefix</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.ticketPrefix" placeholder="WB-">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ticket Postfix</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.ticketPostfix" placeholder="-A">
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <h5 class="mb-3">Charge Suggestion</h5>
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input type="checkbox" class="form-check-input" id="enableCharge"
+                     [(ngModel)]="settings.enableChargeSuggestion">
+              <label class="form-check-label" for="enableCharge">Enable Charge Suggestion</label>
+            </div>
+          </div>
+          @if (settings.enableChargeSuggestion) {
+            <div class="mb-3">
+              <label class="form-label">Suggestion Basis</label>
+              <select class="form-select" [(ngModel)]="settings.chargeSuggestionBasis">
+                <option [value]="ChargeSuggestionBasis.None">None</option>
+                <option [value]="ChargeSuggestionBasis.VehicleRegisteredTareWeight">Vehicle Registered Tare Weight</option>
+                <option [value]="ChargeSuggestionBasis.CapturedTareWeight">Captured Tare Weight</option>
+              </select>
+            </div>
+          }
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input type="checkbox" class="form-check-input" id="recalcSecond"
+                     [(ngModel)]="settings.recalculateSuggestedChargesOnSecondWeighment">
+              <label class="form-check-label" for="recalcSecond">Recalculate charges on 2nd weighment</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <h5 class="mb-3">Print Settings</h5>
+          <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" id="blockPrint"
+                   [(ngModel)]="settings.blockPrintIfPaymentPending">
+            <label class="form-check-label" for="blockPrint">Block print if payment pending</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button class="btn btn-primary btn-lg" (click)="save()" [disabled]="saving">
+          @if (saving) {
+            <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+          } @else {
+            <i class="bi bi-save me-1"></i>Save Settings
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

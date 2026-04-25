@@ -1,0 +1,165 @@
+<div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
+  <h1 class="h3 mb-0">
+    <i class="bi bi-clipboard-check me-2 text-success"></i>Complete Second Weighment
+  </h1>
+  <small class="text-muted ms-auto"><kbd>Esc</kbd> Back to list &nbsp;<kbd>Ctrl+P</kbd> Print</small>
+</div>
+
+@if (loading) {
+  <div class="text-center p-4">
+    <div class="spinner-border text-primary"></div>
+  </div>
+}
+
+@if (result; as r) {
+  <div class="card border-success">
+    <div class="card-header bg-success text-white">
+      <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Weighment Complete</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="card text-bg-success">
+            <div class="card-body text-center">
+              <div class="fs-6 opacity-75">Ticket #</div>
+              <div class="fs-4 fw-bold">{{ r.ticketNumber }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-bg-info">
+            <div class="card-body text-center">
+              <div class="fs-6 opacity-75">Net Weight</div>
+              <div class="fs-4 fw-bold">{{ r.netWeight | number }} kg</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-bg-warning">
+            <div class="card-body text-center">
+              <div class="fs-6 opacity-75">Charges</div>
+              <div class="fs-4 fw-bold">₹{{ r.totalCharges }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-bg-primary">
+            <div class="card-body text-center">
+              <div class="fs-6 opacity-75">Payment</div>
+              <div class="fs-4 fw-bold">{{ r.paymentStatus }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (!r.printAllowed && r.printBlockedReason) {
+        <div class="alert alert-warning mt-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Print blocked: {{ r.printBlockedReason }}
+        </div>
+      }
+
+      <div class="mt-3 d-flex gap-2 flex-wrap">
+        @if (r.printAllowed) {
+          <button class="btn btn-success" (click)="print()">
+            <i class="bi bi-printer me-1"></i>Print Ticket <kbd>Ctrl+P</kbd>
+          </button>
+        }
+        <button class="btn btn-primary" routerLink="/weighment/second">
+          <i class="bi bi-list me-1"></i>Back to List
+        </button>
+        <button class="btn btn-secondary" routerLink="/dashboard">
+          <i class="bi bi-house me-1"></i>Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (!result && !loading) {
+  <div class="row g-3">
+    @if (ticket) {
+      <div class="col-md-5">
+        <div class="card border-info">
+          <div class="card-header"><h5 class="card-title mb-0">First Weighment Details</h5></div>
+          <div class="card-body">
+            <table class="table table-sm table-borderless mb-0">
+              <tr><th class="w-50">Ticket #</th><td>{{ ticket.ticketNumber }}</td></tr>
+              <tr><th>Serial</th><td>{{ ticket.serialNumber }}</td></tr>
+              <tr><th>Vehicle</th><td><span class="badge bg-secondary">{{ ticket.vehicleLicensePlate }}</span></td></tr>
+              <tr><th>Client</th><td>{{ ticket.clientName || '—' }}</td></tr>
+              <tr><th>Driver</th><td>{{ ticket.driverName || '—' }}</td></tr>
+              <tr><th>1st Weight</th><td><strong>{{ ticket.firstWeight | number }} kg</strong></td></tr>
+              <tr><th>1st Time</th><td>{{ ticket.firstWeightDateTime | date:'dd/MM/yyyy HH:mm' }}</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="col-md-7">
+      <div class="card">
+        <div class="card-header"><h5 class="card-title mb-0">Enter Second Weight</h5></div>
+        <div class="card-body">
+          @if (error) {
+            <div class="alert alert-danger">{{ error }}</div>
+          }
+
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-speedometer me-1"></i>Second Weight (kg) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-lg" placeholder="0" min="1"
+                   autofocus [(ngModel)]="secondWeight">
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Charges (₹)</label>
+              <input type="number" class="form-control" [(ngModel)]="totalCharges" min="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Amount Paid (₹)</label>
+              <input type="number" class="form-control" [(ngModel)]="amountPaid" min="0">
+            </div>
+          </div>
+
+          <div class="mb-3 mt-3">
+            <label class="form-label">Payment Mode</label>
+            <select class="form-select" [(ngModel)]="paymentMode">
+              <option [value]="PaymentMode.Cash">Cash</option>
+              <option [value]="PaymentMode.Online">Online</option>
+              <option [value]="PaymentMode.Credit">Credit</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="cap2Vehicle" [(ngModel)]="captureVehicleImage">
+              <label class="form-check-label" for="cap2Vehicle">Capture Vehicle Image</label>
+            </div>
+            <div class="form-check mt-1">
+              <input type="checkbox" class="form-check-input" id="cap2Op" [(ngModel)]="captureOperatorImage">
+              <label class="form-check-label" for="cap2Op">Capture Operator Image</label>
+            </div>
+            <div class="form-check mt-1">
+              <input type="checkbox" class="form-check-input" id="printReq" [(ngModel)]="printRequested">
+              <label class="form-check-label" for="printReq">Request Print</label>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-success btn-lg" (click)="save()" [disabled]="saving">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+              } @else {
+                <i class="bi bi-save me-1"></i>Complete Weighment
+              }
+            </button>
+            <button class="btn btn-secondary" routerLink="/weighment/second">
+              <i class="bi bi-arrow-left me-1"></i>Back
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

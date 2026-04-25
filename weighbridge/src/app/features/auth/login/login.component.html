@@ -1,0 +1,77 @@
+<div class="login-page min-vh-100 d-flex align-items-center justify-content-center"
+     style="background:#343a40">
+  <div style="width:100%;max-width:420px;padding:1rem">
+
+    @if (profiles.length > 0) {
+      <div class="card border-secondary mb-3">
+        <div class="card-header text-center">
+          <h5 class="mb-0"><i class="bi bi-people me-2"></i>Saved Profiles</h5>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            @for (p of profiles; track p.username) {
+              <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  [class.list-group-item-secondary]="isExpired(p)"
+                  style="cursor:pointer"
+                  (click)="activateProfile(p)"
+                  (keyup.enter)="activateProfile(p)"
+                  tabindex="0">
+                <div>
+                  <i class="bi bi-person-circle me-2"></i>
+                  <strong>{{ p.username }}</strong>
+                  @for (r of p.roles; track r) {
+                    <span class="badge bg-primary ms-1">{{ r }}</span>
+                  }
+                  <div class="text-muted small">Last login: {{ p.lastLoginAt | date:'short' }}</div>
+                </div>
+                @if (isExpired(p)) {
+                  <span class="badge bg-danger">Expired</span>
+                } @else {
+                  <span class="badge bg-success">Active</span>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    }
+
+    <div class="card border-primary">
+      <div class="card-header text-center">
+        <h1 class="h4 mb-0"><i class="bi bi-truck me-2"></i>Weighbridge</h1>
+        <p class="text-muted small mb-0">Sign in to continue</p>
+      </div>
+      <div class="card-body">
+        @if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        }
+        <form (ngSubmit)="submit()" #f="ngForm">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <div class="input-group">
+              <input id="username" type="text" class="form-control" name="username"
+                     [(ngModel)]="username" required autofocus placeholder="Enter username">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <input id="password" type="password" class="form-control" name="password"
+                     [(ngModel)]="password" required placeholder="Enter password">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+            @if (loading) {
+              <span class="spinner-border spinner-border-sm me-1"></span>Signing in...
+            } @else {
+              <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>

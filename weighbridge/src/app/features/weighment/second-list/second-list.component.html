@@ -1,0 +1,86 @@
+<div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
+  <h1 class="h3 mb-0">
+    <i class="bi bi-clipboard-check me-2 text-success"></i>Second Weighment
+    <small class="text-muted ms-2 fs-6">Pending Tickets</small>
+  </h1>
+  <span class="badge bg-info">F2</span>
+  <small class="text-muted ms-auto"><kbd>↑ ↓</kbd> Navigate &nbsp;<kbd>Enter</kbd> Open &nbsp;<kbd>Esc</kbd> Dashboard</small>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" placeholder="Search ticket #, vehicle, client…"
+                 [value]="search" (input)="onSearch($any($event.target).value)" autofocus>
+        </div>
+      </div>
+      <div class="col-md-6 text-end">
+        <button class="btn btn-primary" routerLink="/weighment/first">
+          <i class="bi bi-plus me-1"></i>New Weighment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    @if (loading) {
+      <div class="text-center p-4">
+        <div class="spinner-border text-primary"></div>
+      </div>
+    } @else if (tickets.length === 0) {
+      <div class="text-center p-4 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+        <p>No pending tickets found</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width:50px">#</th>
+              <th>Ticket</th>
+              <th>Vehicle</th>
+              <th>Client</th>
+              <th>Driver</th>
+              <th>1st Weight (kg)</th>
+              <th>1st Time</th>
+              <th>Charges</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of tickets; track t.ticketId; let i = $index) {
+              <tr [id]="'ticketRow' + i"
+                  [class.table-primary]="i === selectedIndex"
+                  style="cursor:pointer"
+                  (click)="open(t)"
+                  (keyup.enter)="open(t)"
+                  tabindex="0">
+                <td>{{ t.serialNumber }}</td>
+                <td><strong>{{ t.ticketNumber }}</strong></td>
+                <td><span class="badge bg-secondary">{{ t.vehicleLicensePlate }}</span></td>
+                <td>{{ t.clientName || '—' }}</td>
+                <td>{{ t.driverName || '—' }}</td>
+                <td>{{ t.firstWeight | number }}</td>
+                <td>{{ t.firstWeightDateTime | date:'dd/MM HH:mm' }}</td>
+                <td>₹{{ t.totalCharges }}</td>
+                <td>
+                  <button class="btn btn-sm btn-success" (click)="open(t); $event.stopPropagation()">
+                    <i class="bi bi-arrow-right"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (tickets.length > 0) {
+    <div class="card-footer text-muted">{{ tickets.length }} pending ticket(s)</div>
+  }
+</div>

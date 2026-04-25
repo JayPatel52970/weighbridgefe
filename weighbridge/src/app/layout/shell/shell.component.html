@@ -1,0 +1,18 @@
+<div class="app-wrapper">
+  <app-topnav></app-topnav>
+  <app-sidebar></app-sidebar>
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid"></div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Weighbridge</strong> &copy; {{ year }}
+    <span class="float-end d-none d-sm-inline text-muted">v1.0</span>
+  </footer>
+</div>

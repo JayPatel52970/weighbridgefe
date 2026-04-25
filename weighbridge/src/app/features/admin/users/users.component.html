@@ -1,0 +1,90 @@
+<div class="mb-3"><h1 class="h3"><i class="bi bi-people me-2"></i>Users Management</h1></div>
+
+<div class="card">
+  <div class="card-header">
+    <button class="btn btn-primary" (click)="showForm = !showForm; error = ''">
+      <i class="bi bi-plus me-1"></i>Add User
+    </button>
+  </div>
+
+  @if (showForm) {
+    <div class="card-body border-bottom">
+      @if (error) { <div class="alert alert-danger">{{ error }}</div> }
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Username <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="newUsername" placeholder="Enter username">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Password <span class="text-danger">*</span></label>
+          <input type="password" class="form-control" [(ngModel)]="newPassword" placeholder="Enter password">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Roles</label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input type="checkbox" class="form-check-input" id="roleUser"
+                     [checked]="hasRole('User')" (change)="toggleRole('User')">
+              <label class="form-check-label" for="roleUser">User</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="checkbox" class="form-check-input" id="roleAdmin"
+                     [checked]="hasRole('Admin')" (change)="toggleRole('Admin')">
+              <label class="form-check-label" for="roleAdmin">Admin</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="d-flex gap-2">
+            <button class="btn btn-success" (click)="save()" [disabled]="saving">
+              <i class="bi bi-save me-1"></i>Save
+            </button>
+            <button class="btn btn-secondary" (click)="showForm = false">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="card-body p-0">
+    @if (loading) {
+      <div class="text-center p-4"><div class="spinner-border text-primary"></div></div>
+    } @else {
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr><th>Username</th><th>Roles</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (u of users; track u.id) {
+            <tr>
+              <td><strong>{{ u.username }}</strong></td>
+              <td>
+                @for (r of u.roles; track r) {
+                  <span class="badge bg-primary me-1">{{ r }}</span>
+                }
+              </td>
+              <td>
+                <span class="badge" [class.bg-success]="!u.isDisabled" [class.bg-danger]="u.isDisabled">
+                  {{ u.isDisabled ? 'Disabled' : 'Active' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-sm me-1"
+                        [class.btn-warning]="!u.isDisabled" [class.btn-success]="u.isDisabled"
+                        (click)="toggle(u)">
+                  <i class="bi" [class.bi-person-slash]="!u.isDisabled" [class.bi-person-check]="u.isDisabled"></i>
+                  {{ u.isDisabled ? 'Enable' : 'Disable' }}
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="delete(u)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="text-center text-muted py-4">No users found</td></tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
