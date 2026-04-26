@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { VehicleType } from '../../../core/models';
 
@@ -18,7 +19,7 @@ export class UploadsComponent {
   VehicleType = VehicleType;
   vehicleTypeNames = Object.keys(VehicleType).filter(k => isNaN(Number(k)));
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   onGenericFile(e: Event): void {
     this.genericFile = (e.target as HTMLInputElement).files?.[0] || null;
@@ -29,9 +30,12 @@ export class UploadsComponent {
     this.genericError = '';
     this.genericResult = '';
     this.uploadingGeneric = true;
-    this.api.uploadVehicleTypeGenericImage(this.genericFile, this.selectedVehicleType, this.siteId).subscribe({
-      next: url => { this.uploadingGeneric = false; this.genericResult = url; },
-      error: err => { this.uploadingGeneric = false; this.genericError = err?.error?.message || 'Upload failed.'; }
-    });
+    this.cdr.markForCheck();
+    this.api.uploadVehicleTypeGenericImage(this.genericFile, this.selectedVehicleType, this.siteId)
+      .pipe(finalize(() => { this.uploadingGeneric = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: url => { this.genericResult = url; this.cdr.markForCheck(); },
+        error: err => { this.genericError = err?.error?.message || 'Upload failed.'; this.cdr.markForCheck(); }
+      });
   }
 }

@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { SiteSettings, ChargeSuggestionBasis } from '../../../core/models';
 
@@ -25,25 +26,28 @@ export class SettingsComponent implements OnInit {
 
   ChargeSuggestionBasis = ChargeSuggestionBasis;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void { this.load(); }
 
   load(): void {
     this.loading = true;
-    this.api.getSettings(this.siteId).subscribe({
-      next: s => { this.settings = s; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+    this.cdr.markForCheck();
+    this.api.getSettings(this.siteId)
+      .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
+      .subscribe({ next: s => { this.settings = s; this.cdr.markForCheck(); } });
   }
 
   save(): void {
     this.error = '';
     this.success = false;
     this.saving = true;
-    this.api.saveSettings(this.settings).subscribe({
-      next: () => { this.saving = false; this.success = true; },
-      error: err => { this.saving = false; this.error = err?.error?.message || 'Save failed.'; }
-    });
+    this.cdr.markForCheck();
+    this.api.saveSettings(this.settings)
+      .pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => { this.success = true; this.cdr.markForCheck(); },
+        error: err => { this.error = err?.error?.message || 'Save failed.'; this.cdr.markForCheck(); }
+      });
   }
 }

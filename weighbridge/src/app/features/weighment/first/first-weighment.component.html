@@ -1,242 +1,386 @@
-<div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
-  <h1 class="h3 mb-0">
-    <i class="bi bi-plus-circle me-2 text-primary"></i>New Weighment
-    <small class="text-muted ms-2 fs-6">First Weighment</small>
-  </h1>
-  <span class="badge bg-info">F1</span>
-  <small class="text-muted ms-auto"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F2</kbd> Second Weighment</small>
+<div class="mb-3 d-flex align-items-center justify-content-between no-print">
+  <div>
+    <h1 class="h4 mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>First Weighment</h1>
+  </div>
+  <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F2</kbd> 2nd&nbsp;Wt</small>
 </div>
 
-@if (result) {
-  <div class="card border-success">
-    <div class="card-header bg-success text-white">
-      <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Ticket Saved</h5>
-    </div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <div class="card text-bg-success">
-            <div class="card-body text-center">
-              <div class="fs-6 opacity-75">Ticket #</div>
-              <div class="fs-4 fw-bold">{{ result.ticketNumber }}</div>
-            </div>
+<div class="row g-3 align-items-start">
+
+  <!-- ═══ LEFT: Step form ═══════════════════════════════════════════════════ -->
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+
+        <!-- 1 · Weight Type -->
+        <div class="step-row" [class.active]="isActive('weighType')" [class.done]="isDone('weighType')"
+             (click)="isDone('weighType') && goBack(0)">
+          <div class="step-num">{{ isDone('weighType') ? '✓' : '1' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Weight Type</div>
+            @if (isActive('weighType')) {
+              <div class="d-flex gap-2 mt-2" id="fld-weighType" tabindex="0" (keydown)="onWeighTypeKey($event)">
+                <button type="button" class="btn btn-sm px-4 fw-semibold"
+                  [class]="firstWeighType === FirstWeighType.Gross ? 'btn-primary' : 'btn-outline-secondary'"
+                  (click)="setWeighType(FirstWeighType.Gross)">
+                  <u>G</u>ross
+                </button>
+                <button type="button" class="btn btn-sm px-4 fw-semibold"
+                  [class]="firstWeighType === FirstWeighType.Tare ? 'btn-primary' : 'btn-outline-secondary'"
+                  (click)="setWeighType(FirstWeighType.Tare)">
+                  <u>T</u>are
+                </button>
+              </div>
+              <div class="step-hint"><kbd>←</kbd><kbd>→</kbd> toggle · <kbd>G</kbd> Gross · <kbd>T</kbd> Tare · <kbd>Enter</kbd> confirm · click to select</div>
+              @if (fieldErrors['weighType']) { <div class="step-err">{{ fieldErrors['weighType'] }}</div> }
+            } @else {
+              <div class="step-val">{{ weighTypeName(firstWeighType) }}</div>
+            }
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card text-bg-info">
-            <div class="card-body text-center">
-              <div class="fs-6 opacity-75">Serial</div>
-              <div class="fs-4 fw-bold">{{ result.serialNumber }}</div>
-            </div>
+        <hr class="m-0">
+
+        <!-- 2 · Vehicle Number -->
+        <div class="step-row" [class.active]="isActive('vehicle')" [class.done]="isDone('vehicle')"
+             (click)="isDone('vehicle') && goBack(1)">
+          <div class="step-num">{{ isDone('vehicle') ? '✓' : '2' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Vehicle Number <span class="text-danger">*</span></div>
+            @if (isActive('vehicle')) {
+              <div class="position-relative mt-2">
+                <input id="fld-vehicle" type="text" class="form-control" autocomplete="off"
+                  placeholder="e.g. GJ01AB1234"
+                  [value]="vehicleSearch"
+                  (input)="onVehicleInput($any($event.target).value)"
+                  (keydown.enter)="onVehicleEnter()"
+                  (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
+                  (keydown.arrowup)="$event.preventDefault(); navigateUp()">
+                @if (vehicleSuggestions.length) {
+                  <div class="list-group position-absolute w-100 shadow" style="z-index:200;top:100%;max-height:200px;overflow-y:auto">
+                    @for (v of vehicleSuggestions; track v.id; let i = $index) {
+                      <button type="button" class="list-group-item list-group-item-action py-2 d-flex justify-content-between align-items-center"
+                        [class.active]="vehicleHighlight === i"
+                        (click)="selectVehicle(v)">
+                        <span class="fw-semibold">{{ v.licensePlate }}</span>
+                        <span class="small" [class.text-muted]="vehicleHighlight !== i">{{ vehicleTypeName(v.type) }}
+                          @if (v.defaultCharge) { · ₹{{ v.defaultCharge }} }
+                        </span>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+              @if (fieldErrors['vehicle']) { <div class="step-err">{{ fieldErrors['vehicle'] }}</div> }
+            } @else {
+              <div class="step-val">{{ vehicleSearch }}</div>
+            }
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card text-bg-warning">
-            <div class="card-body text-center">
-              <div class="fs-6 opacity-75">Charges</div>
-              <div class="fs-4 fw-bold">₹{{ result.totalCharges }}</div>
-            </div>
+        <hr class="m-0">
+
+        <!-- 3 · Vehicle Type -->
+        <div class="step-row" [class.active]="isActive('vehicleType')" [class.done]="isDone('vehicleType')"
+             (click)="isDone('vehicleType') && goBack(2)">
+          <div class="step-num">{{ isDone('vehicleType') ? '✓' : '3' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Vehicle Type</div>
+            @if (isActive('vehicleType')) {
+              <div class="d-flex flex-wrap gap-2 mt-2" id="fld-vehicleType" tabindex="0"
+                   (keydown)="onVehicleTypeKey($event)">
+                @for (vt of vehicleTypeEntries; track vt[1]) {
+                  <button type="button" class="btn btn-sm"
+                    [class]="vehicleType === vt[1] ? 'btn-primary' : 'btn-outline-secondary'"
+                    (click)="setVehicleType(vt[1])">
+                    {{ vt[0] }}
+                  </button>
+                }
+              </div>
+              <div class="step-hint"><kbd>←</kbd><kbd>→</kbd> cycle · <kbd>Enter</kbd> confirm · click to select</div>
+            } @else {
+              <div class="step-val">{{ vehicleTypeName(vehicleType) }}</div>
+            }
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card text-bg-primary">
-            <div class="card-body text-center">
-              <div class="fs-6 opacity-75">Payment</div>
-              <div class="fs-4 fw-bold">{{ result.paymentStatus }}</div>
-            </div>
+        <hr class="m-0">
+
+        <!-- 4 · Charges -->
+        <div class="step-row" [class.active]="isActive('charges')" [class.done]="isDone('charges')"
+             (click)="isDone('charges') && goBack(3)">
+          <div class="step-num">{{ isDone('charges') ? '✓' : '4' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Charges (₹)</div>
+            @if (isActive('charges')) {
+              <input id="fld-charges" type="number" class="form-control mt-2" min="0"
+                [(ngModel)]="charges" (keydown.enter)="onChargesEnter()">
+              <div class="step-hint"><kbd>Enter</kbd> to confirm</div>
+            } @else {
+              <div class="step-val">₹ {{ charges | number }}</div>
+            }
           </div>
         </div>
-      </div>
-      <div class="mt-3 d-flex gap-2">
-        <button class="btn btn-primary" (click)="newEntry()">
-          <i class="bi bi-plus me-1"></i>New Entry
-        </button>
-        <button class="btn btn-secondary" routerLink="/dashboard">
-          <i class="bi bi-house me-1"></i>Dashboard
-        </button>
+        <hr class="m-0">
+
+        <!-- 5 · Payment Mode -->
+        <div class="step-row" [class.active]="isActive('paymentMode')" [class.done]="isDone('paymentMode')"
+             (click)="isDone('paymentMode') && goBack(4)">
+          <div class="step-num">{{ isDone('paymentMode') ? '✓' : '5' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Payment Mode</div>
+            @if (isActive('paymentMode')) {
+              <div class="d-flex gap-2 mt-2" id="fld-paymentMode" tabindex="0" (keydown)="onPaymentModeKey($event)">
+                <button type="button" class="btn btn-sm px-3"
+                  [class]="paymentMode === PaymentMode.Cash ? 'btn-primary' : 'btn-outline-secondary'"
+                  (click)="setPaymentMode(PaymentMode.Cash)"><u>C</u>ash</button>
+                <button type="button" class="btn btn-sm px-3"
+                  [class]="paymentMode === PaymentMode.Online ? 'btn-primary' : 'btn-outline-secondary'"
+                  (click)="setPaymentMode(PaymentMode.Online)"><u>O</u>nline</button>
+                <button type="button" class="btn btn-sm px-3"
+                  [class]="paymentMode === PaymentMode.Credit ? 'btn-primary' : 'btn-outline-secondary'"
+                  (click)="setPaymentMode(PaymentMode.Credit)">C<u>r</u>edit</button>
+              </div>
+              <div class="step-hint"><kbd>←</kbd><kbd>→</kbd> cycle · <kbd>C</kbd> Cash · <kbd>O</kbd> Online · <kbd>R</kbd> Credit · click to select</div>
+            } @else {
+              <div class="step-val">{{ payModeName(paymentMode) }}</div>
+            }
+          </div>
+        </div>
+        <hr class="m-0">
+
+        <!-- 6 · Payment Amount -->
+        <div class="step-row" [class.active]="isActive('paymentAmount')" [class.done]="isDone('paymentAmount')"
+             (click)="isDone('paymentAmount') && goBack(5)">
+          <div class="step-num">{{ isDone('paymentAmount') ? '✓' : '6' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Amount Paid (₹)</div>
+            @if (isActive('paymentAmount')) {
+              <input id="fld-paymentAmount" type="number" class="form-control mt-2" min="0"
+                [(ngModel)]="paymentAmount" (keydown.enter)="advance('paymentAmount')">
+              <div class="step-hint"><kbd>Enter</kbd> to confirm</div>
+            } @else {
+              <div class="step-val">₹ {{ paymentAmount | number }}</div>
+            }
+          </div>
+        </div>
+        <hr class="m-0">
+
+        <!-- 7 · Material -->
+        <div class="step-row" [class.active]="isActive('material')" [class.done]="isDone('material')"
+             (click)="isDone('material') && goBack(6)">
+          <div class="step-num">{{ isDone('material') ? '✓' : '7' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Material <span class="text-muted fw-normal">(optional)</span></div>
+            @if (isActive('material')) {
+              <div class="position-relative mt-2">
+                <input id="fld-material" type="text" class="form-control" autocomplete="off"
+                  placeholder="Search or skip with Enter"
+                  [value]="materialSearch"
+                  (input)="onMaterialInput($any($event.target).value)"
+                  (keydown.enter)="onMaterialEnter()"
+                  (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
+                  (keydown.arrowup)="$event.preventDefault(); navigateUp()">
+                @if (materialSuggestions.length) {
+                  <div class="list-group position-absolute w-100 shadow" style="z-index:200;top:100%;max-height:180px;overflow-y:auto">
+                    @for (m of materialSuggestions; track m.id; let i = $index) {
+                      <button type="button" class="list-group-item list-group-item-action py-2"
+                        [class.active]="materialHighlight === i"
+                        (click)="selectMaterial(m)">{{ m.name }}</button>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="step-val">{{ selectedMaterial?.name || '—' }}</div>
+            }
+          </div>
+        </div>
+        <hr class="m-0">
+
+        <!-- 8 · Client -->
+        <div class="step-row" [class.active]="isActive('client')" [class.done]="isDone('client')"
+             (click)="isDone('client') && goBack(7)">
+          <div class="step-num">{{ isDone('client') ? '✓' : '8' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Client <span class="text-muted fw-normal">(optional)</span></div>
+            @if (isActive('client')) {
+              <div class="position-relative mt-2">
+                <input id="fld-client" type="text" class="form-control" autocomplete="off"
+                  placeholder="Search or skip with Enter"
+                  [value]="clientSearch"
+                  (input)="onClientInput($any($event.target).value)"
+                  (keydown.enter)="onClientEnter()"
+                  (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
+                  (keydown.arrowup)="$event.preventDefault(); navigateUp()">
+                @if (clientSuggestions.length) {
+                  <div class="list-group position-absolute w-100 shadow" style="z-index:200;top:100%;max-height:180px;overflow-y:auto">
+                    @for (c of clientSuggestions; track c.id; let i = $index) {
+                      <button type="button" class="list-group-item list-group-item-action py-2"
+                        [class.active]="clientHighlight === i"
+                        (click)="selectClient(c)">{{ c.name }}</button>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="step-val">{{ selectedClient?.name || '—' }}</div>
+            }
+          </div>
+        </div>
+        <hr class="m-0">
+
+        <!-- 9 · Driver Name -->
+        <div class="step-row" [class.active]="isActive('driverName')" [class.done]="isDone('driverName')"
+             (click)="isDone('driverName') && goBack(8)">
+          <div class="step-num">{{ isDone('driverName') ? '✓' : '9' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Driver Name <span class="text-muted fw-normal">(optional)</span></div>
+            @if (isActive('driverName')) {
+              <input id="fld-driverName" type="text" class="form-control mt-2"
+                placeholder="Driver name or Enter to skip"
+                [(ngModel)]="driverName"
+                (keydown.enter)="advance('driverName')"
+                (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
+                (keydown.arrowup)="$event.preventDefault(); navigateUp()">
+            } @else {
+              <div class="step-val">{{ driverName || '—' }}</div>
+            }
+          </div>
+        </div>
+        <hr class="m-0">
+
+        <!-- 10 · Confirm -->
+        <div class="step-row" [class.active]="isActive('confirm')">
+          <div class="step-num">{{ isDone('confirm') ? '✓' : '10' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Confirm &amp; Save</div>
+            @if (isActive('confirm')) {
+              <div class="mt-2">
+                @if (error) { <div class="alert alert-danger py-2 mb-2 small">{{ error }}</div> }
+                <div class="d-flex flex-wrap gap-2 mb-2 small text-muted">
+                  <span><i class="bi bi-truck me-1"></i>{{ vehicleSearch }}</span>
+                  <span>·</span>
+                  <span>{{ weighTypeName(firstWeighType) }}</span>
+                  <span>·</span>
+                  <span>₹{{ charges }}</span>
+                  <span>·</span>
+                  <span>{{ payModeName(paymentMode) }}</span>
+                </div>
+                <button id="fld-confirm" type="button" class="btn btn-success"
+                  (click)="save()" [disabled]="saving">
+                  @if (saving) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                  @else { <i class="bi bi-check2-circle me-2"></i> }
+                  Confirm &amp; Save
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
-}
 
-@if (!result) {
-  <div class="card">
-    <div class="card-body">
-      @if (error) {
-        <div class="alert alert-danger">{{ error }}</div>
-      }
+  <!-- ═══ RIGHT: Live weight panel ══════════════════════════════════════════ -->
+  <div class="col-lg-5 no-print">
+    <div class="wp">
 
-      <div class="row g-3">
-        <!-- Vehicle -->
-        <div class="col-md-6">
-          <label class="form-label"><i class="bi bi-truck me-1"></i>Vehicle <span class="text-danger">*</span></label>
-          <div class="input-group position-relative">
-            <input #vehicleInput type="text" class="form-control text-uppercase"
-                   placeholder="Search by plate (e.g. MH12AB1234)"
-                   [value]="vehicleSearch"
-                   (input)="onVehicleType($any($event.target).value)">
-            <button class="btn btn-outline-secondary" type="button"
-                    (click)="showAddVehicle = !showAddVehicle" title="Add new vehicle">
-              <i class="bi bi-plus"></i>
-            </button>
-          </div>
-          @if (vehicleSuggestions.length > 0) {
-            <div class="dropdown-menu show w-100" style="position:absolute;z-index:999">
-              @for (v of vehicleSuggestions; track v.id) {
-                <a class="dropdown-item" (click)="selectVehicle(v)" (keyup.enter)="selectVehicle(v)" tabindex="0">
-                  <strong>{{ v.licensePlate }}</strong>
-                  <span class="text-muted ms-2">{{ VehicleType[v.type] }}</span>
-                  @if (v.registeredTareWeight) {
-                    <span class="badge bg-secondary ms-2">{{ v.registeredTareWeight }} kg</span>
-                  }
-                </a>
-              }
-            </div>
-          }
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center">
+          <span class="wp-live-dot" [class.on]="weightState === 'connected'" [class.warn]="weightState === 'reconnecting'" [class.off]="weightState === 'disconnected'"></span>
+          <span class="wp-tag">Live Scale</span>
         </div>
-
-        <!-- Weigh type -->
-        <div class="col-md-6">
-          <label class="form-label"><i class="bi bi-scale me-1"></i>Weigh Type</label>
-          <div class="d-flex gap-3 pt-1">
-            <div class="form-check">
-              <input type="radio" id="gross" class="form-check-input" name="weighType"
-                     [value]="0" [(ngModel)]="firstWeighType">
-              <label class="form-check-label" for="gross">Gross (Loaded)</label>
-            </div>
-            <div class="form-check">
-              <input type="radio" id="tare" class="form-check-input" name="weighType"
-                     [value]="1" [(ngModel)]="firstWeighType">
-              <label class="form-check-label" for="tare">Tare (Empty)</label>
-            </div>
-          </div>
-        </div>
+        <span class="wp-conn" [class.ok]="weightState === 'connected'" [class.warn]="weightState === 'reconnecting'" [class.off]="weightState === 'disconnected'">
+          {{ weightState === 'connected' ? 'CONNECTED' : weightState === 'reconnecting' ? 'RECONNECT...' : 'OFFLINE' }}
+        </span>
       </div>
 
-      @if (showAddVehicle) {
-        <div class="card border-secondary mt-3">
-          <div class="card-header py-2"><h6 class="mb-0">Add New Vehicle</h6></div>
-          <div class="card-body py-2">
-            <div class="row g-2">
-              <div class="col-md-4">
-                <input type="text" class="form-control text-uppercase" placeholder="License Plate"
-                       [(ngModel)]="newVehiclePlate">
-              </div>
-              <div class="col-md-4">
-                <select class="form-select" [(ngModel)]="newVehicleType">
-                  @for (t of vehicleTypes; track t[1]) {
-                    <option [value]="t[1]">{{ t[0] }}</option>
-                  }
-                </select>
-              </div>
-              <div class="col-md-4 d-flex gap-2">
-                <button class="btn btn-primary btn-sm" (click)="addVehicle()">
-                  <i class="bi bi-save me-1"></i>Save Vehicle
-                </button>
-                <button class="btn btn-secondary btn-sm" (click)="showAddVehicle = false">Cancel</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
-
-      <div class="row g-3 mt-1">
-        <!-- Client -->
-        <div class="col-md-6">
-          <label class="form-label"><i class="bi bi-building me-1"></i>Client
-            <span class="text-muted">(optional)</span></label>
-          <div class="position-relative">
-            <input type="text" class="form-control" placeholder="Search client by name"
-                   [value]="clientSearch"
-                   (input)="onClientType($any($event.target).value)">
-            @if (clientSuggestions.length > 0) {
-              <div class="dropdown-menu show w-100" style="position:absolute;z-index:999">
-                @for (c of clientSuggestions; track c.id) {
-                  <a class="dropdown-item" (click)="selectClient(c)" tabindex="0">{{ c.name }}</a>
-                }
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- Material -->
-        <div class="col-md-6">
-          <label class="form-label"><i class="bi bi-box me-1"></i>Material
-            <span class="text-muted">(optional)</span></label>
-          <div class="position-relative">
-            <input type="text" class="form-control" placeholder="Search material"
-                   [value]="materialSearch"
-                   (input)="onMaterialType($any($event.target).value)">
-            @if (materialSuggestions.length > 0) {
-              <div class="dropdown-menu show w-100" style="position:absolute;z-index:999">
-                @for (m of materialSuggestions; track m.id) {
-                  <a class="dropdown-item" (click)="selectMaterial(m)" tabindex="0">{{ m.name }}</a>
-                }
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <div class="row g-3 mt-1">
-        <div class="col-md-6">
-          <label class="form-label"><i class="bi bi-person-badge me-1"></i>Driver Name</label>
-          <input type="text" class="form-control" placeholder="Driver name" [(ngModel)]="driverName">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label"><i class="bi bi-speedometer me-1"></i>Weight (kg) <span class="text-danger">*</span></label>
-          <input type="number" class="form-control" placeholder="0" min="1" [(ngModel)]="firstWeight">
-        </div>
-      </div>
-
-      <div class="row g-3 mt-1">
-        <div class="col-md-4">
-          <label class="form-label"><i class="bi bi-currency-rupee me-1"></i>Charges (₹)</label>
-          <input type="number" class="form-control" placeholder="0" min="0" [(ngModel)]="totalCharges">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label"><i class="bi bi-cash me-1"></i>Amount Paid (₹)</label>
-          <input type="number" class="form-control" placeholder="0" min="0" [(ngModel)]="amountPaid">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label"><i class="bi bi-credit-card me-1"></i>Payment Mode</label>
-          <select class="form-select" [(ngModel)]="paymentMode">
-            <option [value]="PaymentMode.Cash">Cash</option>
-            <option [value]="PaymentMode.Online">Online</option>
-            <option [value]="PaymentMode.Credit">Credit</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row g-3 mt-1">
-        <div class="col-md-6">
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="capVehicle" [(ngModel)]="captureVehicleImage">
-            <label class="form-check-label" for="capVehicle">
-              <i class="bi bi-camera me-1"></i>Capture Vehicle Image
-            </label>
-          </div>
-          <div class="form-check mt-1">
-            <input type="checkbox" class="form-check-input" id="capOperator" [(ngModel)]="captureOperatorImage">
-            <label class="form-check-label" for="capOperator">
-              <i class="bi bi-person-video me-1"></i>Capture Operator Image
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-4 d-flex gap-2">
-        <button class="btn btn-primary btn-lg" (click)="save()" [disabled]="saving">
-          @if (saving) {
-            <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+      <!-- Dark digit display area -->
+      <div class="wp-display">
+        <div class="wp-digits">{{ liveWeight?.weight ?? 0 | number:'1.0-0' }}</div>
+        <div class="wp-unit">K &nbsp; G</div>
+        <div class="d-flex justify-content-between align-items-center mt-2">
+          @if (liveWeight?.isStable) {
+            <span class="wp-stable" style="font-size:.6rem;letter-spacing:.12em">&#9632; STABLE</span>
           } @else {
-            <i class="bi bi-save me-1"></i>Save Weighment
+            <span class="wp-motion" style="font-size:.6rem;letter-spacing:.05em">&#9651; MOTION</span>
           }
+          <span style="font-size:.6rem;color:#374151;letter-spacing:.05em">{{ liveWeight?.mode ?? '—' }}</span>
+        </div>
+      </div>
+
+      <!-- Mode bar (light) -->
+      <div class="wp-modes">
+        <div class="wp-mode" [class.on]="firstWeighType === FirstWeighType.Gross">GROSS</div>
+        <div class="wp-mode">NET</div>
+        <div class="wp-mode" [class.on]="firstWeighType === FirstWeighType.Tare">TARE</div>
+      </div>
+
+      <hr class="wp-div">
+
+      <!-- Camera options -->
+      <div class="wp-label mb-2">Capture Options</div>
+      <div class="d-flex flex-column gap-2">
+        <label class="wp-cam-lbl">
+          <input type="checkbox" [(ngModel)]="captureVehicleImage" class="form-check-input m-0">
+          <i class="bi bi-camera text-secondary"></i>
+          <span>Vehicle Image</span>
+        </label>
+        <label class="wp-cam-lbl">
+          <input type="checkbox" [(ngModel)]="captureOperatorImage" class="form-check-input m-0">
+          <i class="bi bi-person-video text-secondary"></i>
+          <span>Operator Image</span>
+        </label>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ Print Overlay ═══════════════════════════════════════════════════════ -->
+@if (showPrint && result) {
+  <div class="po-back" (click)="showPrint = false">
+    <div class="po-card" (click)="$event.stopPropagation()">
+
+      <div class="po-head">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-check-circle-fill fs-4"></i>
+          <div>
+            <div class="fw-bold fs-5">Ticket Saved</div>
+            <div style="opacity:.8;font-size:.85rem">{{ result.ticketNumber }}</div>
+          </div>
+          <span class="ms-auto badge bg-white bg-opacity-20 fs-6">#{{ result.serialNumber }}</span>
+        </div>
+      </div>
+
+      <div class="po-body">
+        <div class="po-row"><span class="po-lbl">Vehicle</span><span class="po-val">{{ vehicleSearch }}</span></div>
+        <div class="po-row"><span class="po-lbl">Weight Type</span><span class="po-val">{{ weighTypeName(firstWeighType) }}</span></div>
+        <div class="po-row"><span class="po-lbl">Weight</span><span class="po-val">{{ (liveWeight?.weight ?? 0) | number:'1.0-0' }} kg</span></div>
+        @if (selectedMaterial) {
+          <div class="po-row"><span class="po-lbl">Material</span><span class="po-val">{{ selectedMaterial.name }}</span></div>
+        }
+        @if (selectedClient) {
+          <div class="po-row"><span class="po-lbl">Client</span><span class="po-val">{{ selectedClient.name }}</span></div>
+        }
+        @if (driverName) {
+          <div class="po-row"><span class="po-lbl">Driver</span><span class="po-val">{{ driverName }}</span></div>
+        }
+        <div class="po-row"><span class="po-lbl">Charges</span><span class="po-val">₹ {{ result.totalCharges | number }}</span></div>
+        <div class="po-row"><span class="po-lbl">Paid</span><span class="po-val">₹ {{ result.amountPaid | number }}</span></div>
+        <div class="po-row"><span class="po-lbl">Payment</span><span class="po-val">{{ result.paymentStatus }}</span></div>
+      </div>
+
+      <div class="po-foot">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="newEntry()">
+          <i class="bi bi-plus me-1"></i>New Entry
         </button>
-        <button class="btn btn-secondary" routerLink="/dashboard">
-          <i class="bi bi-x me-1"></i>Cancel
+        <button id="print-btn" type="button" class="btn btn-primary btn-sm" (click)="doPrint()">
+          <i class="bi bi-printer me-1"></i>
+          {{ printCount === 0 ? 'Print Ticket' : 'Print Another Copy' }}
         </button>
       </div>
+
     </div>
   </div>
 }

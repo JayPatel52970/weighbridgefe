@@ -1,23 +1,24 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { finalize } from 'rxjs/operators';
-import { ApiService } from '../../core/services/api.service';
+import { ApiService } from '../../../core/services/api.service';
 import {
-  TodaysCollection, LedgerItem,
+  TodaysCollection, AdminLedgerItem,
   WeighmentStatus, PaymentStatus, PaymentMode, FirstWeighType
-} from '../../core/models';
+} from '../../../core/models';
 
 type Tab = 'collection' | 'ledger' | 'vehicle';
 
 @Component({
-  selector: 'app-reports',
-  templateUrl: './reports.component.html',
+  selector: 'app-admin-reports',
+  templateUrl: './admin-reports.component.html',
   standalone: false
 })
-export class ReportsComponent implements OnInit {
+export class AdminReportsComponent {
   siteId = 1;
   activeTab: Tab = 'collection';
 
   collectionDate = new Date().toISOString().slice(0, 10);
+  collectionUser = '';
   collection: TodaysCollection | null = null;
   collectionLoading = false;
   collectionError = '';
@@ -26,14 +27,16 @@ export class ReportsComponent implements OnInit {
   ledgerTo = '';
   ledgerSearch = '';
   ledgerStatus: WeighmentStatus | '' = '';
-  ledgerItems: LedgerItem[] = [];
+  ledgerUser = '';
+  ledgerItems: AdminLedgerItem[] = [];
   ledgerLoading = false;
   ledgerError = '';
 
   vehiclePlate = '';
   vehicleFrom = '';
   vehicleTo = '';
-  vehicleItems: LedgerItem[] = [];
+  vehicleUser = '';
+  vehicleItems: AdminLedgerItem[] = [];
   vehicleLoading = false;
   vehicleError = '';
 
@@ -44,10 +47,6 @@ export class ReportsComponent implements OnInit {
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit(): void {
-    this.loadCollection();
-  }
-
   setTab(tab: Tab): void {
     this.activeTab = tab;
   }
@@ -56,7 +55,7 @@ export class ReportsComponent implements OnInit {
     this.collectionLoading = true;
     this.collectionError = '';
     this.cdr.markForCheck();
-    this.api.getTodaysCollection(this.siteId, this.collectionDate)
+    this.api.getAdminTodaysCollection(this.siteId, this.collectionDate, this.collectionUser.trim() || undefined)
       .pipe(finalize(() => { this.collectionLoading = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: r => { this.collection = r; this.cdr.markForCheck(); },
@@ -68,11 +67,12 @@ export class ReportsComponent implements OnInit {
     this.ledgerLoading = true;
     this.ledgerError = '';
     this.cdr.markForCheck();
-    this.api.getLedger(this.siteId, {
+    this.api.getAdminLedger(this.siteId, {
       from: this.ledgerFrom || undefined,
       to: this.ledgerTo || undefined,
       search: this.ledgerSearch.trim() || undefined,
-      status: this.ledgerStatus !== '' ? this.ledgerStatus : undefined
+      status: this.ledgerStatus !== '' ? this.ledgerStatus : undefined,
+      createdBy: this.ledgerUser.trim() || undefined
     }).pipe(finalize(() => { this.ledgerLoading = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: r => { this.ledgerItems = r; this.cdr.markForCheck(); },
@@ -85,10 +85,11 @@ export class ReportsComponent implements OnInit {
     this.vehicleLoading = true;
     this.vehicleError = '';
     this.cdr.markForCheck();
-    this.api.getVehicleReport(this.siteId, {
+    this.api.getAdminVehicleReport(this.siteId, {
       licensePlate: this.vehiclePlate.trim().toUpperCase(),
       from: this.vehicleFrom || undefined,
-      to: this.vehicleTo || undefined
+      to: this.vehicleTo || undefined,
+      createdBy: this.vehicleUser.trim() || undefined
     }).pipe(finalize(() => { this.vehicleLoading = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: r => { this.vehicleItems = r; this.cdr.markForCheck(); },
@@ -130,7 +131,7 @@ export class ReportsComponent implements OnInit {
     return t === FirstWeighType.Gross ? 'Gross' : 'Tare';
   }
 
-  sum(items: LedgerItem[], field: 'totalCharges' | 'amountPaid'): number {
+  sum(items: AdminLedgerItem[], field: 'totalCharges' | 'amountPaid'): number {
     return items.reduce((acc, i) => acc + i[field], 0);
   }
 }

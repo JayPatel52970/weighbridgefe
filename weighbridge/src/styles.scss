@@ -26,11 +26,45 @@ tr:focus {
   }
 }
 
+/* ─── Weight panel (shared: first & second weighment) ──────────────────────── */
+.wp { background:#fff; border-radius:12px; padding:18px 20px; border:1px solid #dee2e6; box-shadow:0 1px 4px rgba(0,0,0,.06); position:sticky; top:72px; }
+.wp-display { background:#0b0f14; border-radius:8px; padding:14px 16px; margin-bottom:12px; }
+.wp-live-dot { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:6px; flex-shrink:0; }
+.wp-live-dot.on { background:#00e676; animation:wpblink 1.4s infinite; }
+.wp-live-dot.off { background:#4b5563; }
+.wp-live-dot.warn { background:#ffc107; animation:wpblink 1.4s infinite; }
+@keyframes wpblink { 0%,100%{opacity:1} 50%{opacity:.12} }
+.wp-tag { font-size:.58rem; font-weight:700; letter-spacing:.15em; color:#6b7280; text-transform:uppercase; }
+.wp-conn { font-size:.58rem; font-weight:600; letter-spacing:.1em; padding:2px 7px; border-radius:3px; }
+.wp-conn.ok { background:rgba(25,135,84,.08); color:#198754; border:1px solid rgba(25,135,84,.25); }
+.wp-conn.warn { background:rgba(255,193,7,.08); color:#997404; border:1px solid rgba(255,193,7,.25); }
+.wp-conn.off { background:rgba(108,117,125,.08); color:#6c757d; border:1px solid rgba(108,117,125,.25); }
+.wp-digits { font-family:'Courier New','Lucida Console',monospace; font-size:3.4rem; font-weight:900; color:#00e676; text-shadow:0 0 12px rgba(0,230,118,.55),0 0 28px rgba(0,230,118,.15); letter-spacing:5px; line-height:1.1; text-align:right; padding:4px 0; }
+.wp-unit { font-family:'Courier New',monospace; font-size:.8rem; font-weight:700; color:#00e676; opacity:.45; text-align:right; letter-spacing:4px; margin-top:-4px; }
+.wp-div { border:none; border-top:1px solid #e5e7eb; margin:14px 0; }
+.wp-modes { display:flex; gap:6px; margin-top:10px; }
+.wp-mode { flex:1; text-align:center; padding:5px 4px; font-size:.58rem; font-weight:700; letter-spacing:.12em; border-radius:4px; background:#f3f4f6; color:#9ca3af; border:1px solid #e5e7eb; }
+.wp-mode.on { background:#d1fae5; color:#065f46; border-color:#6ee7b7; }
+.wp-label { font-size:.6rem; font-weight:700; letter-spacing:.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:5px; }
+.wp-stable { font-size:.65rem; font-weight:700; letter-spacing:.12em; color:#059669; }
+.wp-motion { font-size:.65rem; color:#adb5bd; letter-spacing:.05em; }
+.wp-cam-lbl { font-size:.78rem; color:#6b7280; display:flex; align-items:center; gap:6px; cursor:pointer; }
+
+/* ─── Topnav scale badge ────────────────────────────────────────────────────── */
+.wb-scale { display:flex; align-items:center; gap:4px; background:#0b0f14; border-radius:6px; padding:3px 10px; }
+.wb-scale-dot { width:6px; height:6px; border-radius:50%; background:#4b5563; flex-shrink:0; }
+.wb-scale-dot.on { background:#00e676; animation:wpblink 1.4s infinite; }
+.wb-scale-dot.warn { background:#ffc107; animation:wpblink 1.4s infinite; }
+.wb-scale-val { font-family:'Courier New',monospace; font-size:1.5rem; font-weight:900; color:#00e676; letter-spacing:3px; text-shadow:0 0 10px rgba(0,230,118,.45); min-width:5ch; text-align:right; }
+.wb-scale-unit { font-family:'Courier New',monospace; font-size:.8rem; color:#00e676; opacity:.45; }
+
 @media print {
   .app-sidebar,
   .app-header,
   .app-footer,
-  .no-print {
+  .no-print,
+  .wp,
+  .wb-scale {
     display: none !important;
   }
   .app-main {

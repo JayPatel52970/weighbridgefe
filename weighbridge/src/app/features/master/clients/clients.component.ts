@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { Client } from '../../../core/models';
 
@@ -22,10 +23,9 @@ export class ClientsComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.api.searchClients(this.search).subscribe({
-      next: r => { this.clients = r; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+    this.api.searchClients(this.search)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe({ next: r => this.clients = r });
   }
 
   save(): void {

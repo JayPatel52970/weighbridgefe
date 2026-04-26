@@ -6,7 +6,8 @@ import {
   Vehicle, Client, Material,
   FirstWeighmentRequest, FirstWeighmentResponse,
   PendingTicket, SecondWeighmentRequest, SecondWeighmentResponse,
-  SiteSettings, ChargeSlab, CameraSettings, AdminUser, CreateUserRequest
+  SiteSettings, ChargeSlab, CameraSettings, AdminUser, CreateUserRequest,
+  TodaysCollection, LedgerItem, AdminLedgerItem, WeighmentStatus
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -116,6 +117,63 @@ export class ApiService {
   }
   deleteUser(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/admin/users/${id}`);
+  }
+
+  // ─── Reports (User) ───────────────────────────────────────────────────────
+  getTodaysCollection(siteId: number, date?: string): Observable<TodaysCollection> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (date) params = params.set('date', date);
+    return this.http.get<TodaysCollection>(`${this.base}/api/reports/todays-collection`, { params });
+  }
+  getLedger(siteId: number, f: { from?: string; to?: string; search?: string; status?: WeighmentStatus; skip?: number; take?: number } = {}): Observable<LedgerItem[]> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (f.from) params = params.set('from', f.from);
+    if (f.to) params = params.set('to', f.to);
+    if (f.search) params = params.set('search', f.search);
+    if (f.status != null) params = params.set('status', f.status);
+    if (f.skip != null) params = params.set('skip', f.skip);
+    if (f.take != null) params = params.set('take', f.take);
+    return this.http.get<LedgerItem[]>(`${this.base}/api/reports/ledger`, { params });
+  }
+  getVehicleReport(siteId: number, f: { vehicleId?: string; licensePlate?: string; from?: string; to?: string; skip?: number; take?: number } = {}): Observable<LedgerItem[]> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (f.vehicleId) params = params.set('vehicleId', f.vehicleId);
+    if (f.licensePlate) params = params.set('licensePlate', f.licensePlate);
+    if (f.from) params = params.set('from', f.from);
+    if (f.to) params = params.set('to', f.to);
+    if (f.skip != null) params = params.set('skip', f.skip);
+    if (f.take != null) params = params.set('take', f.take);
+    return this.http.get<LedgerItem[]>(`${this.base}/api/reports/vehicle`, { params });
+  }
+
+  // ─── Reports (Admin) ──────────────────────────────────────────────────────
+  getAdminTodaysCollection(siteId: number, date?: string, createdBy?: string): Observable<TodaysCollection> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (date) params = params.set('date', date);
+    if (createdBy) params = params.set('createdBy', createdBy);
+    return this.http.get<TodaysCollection>(`${this.base}/api/admin/reports/todays-collection`, { params });
+  }
+  getAdminLedger(siteId: number, f: { from?: string; to?: string; search?: string; status?: WeighmentStatus; createdBy?: string; skip?: number; take?: number } = {}): Observable<AdminLedgerItem[]> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (f.from) params = params.set('from', f.from);
+    if (f.to) params = params.set('to', f.to);
+    if (f.search) params = params.set('search', f.search);
+    if (f.status != null) params = params.set('status', f.status);
+    if (f.createdBy) params = params.set('createdBy', f.createdBy);
+    if (f.skip != null) params = params.set('skip', f.skip);
+    if (f.take != null) params = params.set('take', f.take);
+    return this.http.get<AdminLedgerItem[]>(`${this.base}/api/admin/reports/ledger`, { params });
+  }
+  getAdminVehicleReport(siteId: number, f: { vehicleId?: string; licensePlate?: string; from?: string; to?: string; createdBy?: string; skip?: number; take?: number } = {}): Observable<AdminLedgerItem[]> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (f.vehicleId) params = params.set('vehicleId', f.vehicleId);
+    if (f.licensePlate) params = params.set('licensePlate', f.licensePlate);
+    if (f.from) params = params.set('from', f.from);
+    if (f.to) params = params.set('to', f.to);
+    if (f.createdBy) params = params.set('createdBy', f.createdBy);
+    if (f.skip != null) params = params.set('skip', f.skip);
+    if (f.take != null) params = params.set('take', f.take);
+    return this.http.get<AdminLedgerItem[]>(`${this.base}/api/admin/reports/vehicle`, { params });
   }
 
   // ─── Uploads ──────────────────────────────────────────────────────────────

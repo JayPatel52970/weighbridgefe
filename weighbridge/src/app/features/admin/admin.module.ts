@@ -7,6 +7,7 @@ import { ChargeSlabsComponent } from './charge-slabs/charge-slabs.component';
 import { CamerasComponent } from './cameras/cameras.component';
 import { UsersComponent } from './users/users.component';
 import { UploadsComponent } from './uploads/uploads.component';
+import { AdminReportsComponent } from './reports/admin-reports.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 
 const routes: Routes = [
@@ -14,11 +15,12 @@ const routes: Routes = [
   { path: 'charge-slabs', component: ChargeSlabsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
   { path: 'cameras', component: CamerasComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
   { path: 'users', component: UsersComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
-  { path: 'uploads', component: UploadsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } }
+  { path: 'uploads', component: UploadsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
+  { path: 'reports', component: AdminReportsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } }
 ];
 
 @NgModule({
-  declarations: [SettingsComponent, ChargeSlabsComponent, CamerasComponent, UsersComponent, UploadsComponent],
+  declarations: [SettingsComponent, ChargeSlabsComponent, CamerasComponent, UsersComponent, UploadsComponent, AdminReportsComponent],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes)]
 })
 export class AdminModule {}

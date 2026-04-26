@@ -13,8 +13,11 @@
       <div class="col-md-6">
         <div class="input-group">
           <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input type="text" class="form-control" placeholder="Search ticket #, vehicle, client…"
-                 [value]="search" (input)="onSearch($any($event.target).value)" autofocus>
+          <input id="search-input" type="text" class="form-control"
+                 placeholder="Search vehicle, ticket #, serial…"
+                 [value]="search"
+                 (input)="onSearch($any($event.target).value)"
+                 (keydown)="onSearchKeydown($event)">
         </div>
       </div>
       <div class="col-md-6 text-end">
@@ -30,10 +33,10 @@
       <div class="text-center p-4">
         <div class="spinner-border text-primary"></div>
       </div>
-    } @else if (tickets.length === 0) {
+    } @else if (filtered.length === 0) {
       <div class="text-center p-4 text-muted">
         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-        <p>No pending tickets found</p>
+        <p>{{ search ? 'No tickets match your search' : 'No pending tickets found' }}</p>
       </div>
     } @else {
       <div class="table-responsive">
@@ -52,13 +55,11 @@
             </tr>
           </thead>
           <tbody>
-            @for (t of tickets; track t.ticketId; let i = $index) {
+            @for (t of filtered; track t.ticketId; let i = $index) {
               <tr [id]="'ticketRow' + i"
                   [class.table-primary]="i === selectedIndex"
                   style="cursor:pointer"
-                  (click)="open(t)"
-                  (keyup.enter)="open(t)"
-                  tabindex="0">
+                  (click)="open(t)">
                 <td>{{ t.serialNumber }}</td>
                 <td><strong>{{ t.ticketNumber }}</strong></td>
                 <td><span class="badge bg-secondary">{{ t.vehicleLicensePlate }}</span></td>
@@ -81,6 +82,12 @@
   </div>
 
   @if (tickets.length > 0) {
-    <div class="card-footer text-muted">{{ tickets.length }} pending ticket(s)</div>
+    <div class="card-footer text-muted">
+      @if (search) {
+        {{ filtered.length }} of {{ tickets.length }} ticket(s)
+      } @else {
+        {{ tickets.length }} pending ticket(s)
+      }
+    </div>
   }
 </div>

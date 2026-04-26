@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { Vehicle, VehicleType } from '../../../core/models';
 
@@ -27,10 +28,9 @@ export class VehiclesComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.api.searchVehicles(this.search).subscribe({
-      next: r => { this.vehicles = r; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+    this.api.searchVehicles(this.search)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe({ next: r => this.vehicles = r });
   }
 
   save(): void {

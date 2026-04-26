@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { Material } from '../../../core/models';
 
@@ -22,10 +23,9 @@ export class MaterialsComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.api.searchMaterials(this.search).subscribe({
-      next: r => { this.materials = r; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+    this.api.searchMaterials(this.search)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe({ next: r => this.materials = r });
   }
 
   save(): void {

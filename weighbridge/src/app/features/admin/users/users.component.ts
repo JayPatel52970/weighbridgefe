@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminUser } from '../../../core/models';
 
@@ -17,16 +18,16 @@ export class UsersComponent implements OnInit {
   saving = false;
   error = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void { this.load(); }
 
   load(): void {
     this.loading = true;
-    this.api.getUsers().subscribe({
-      next: r => { this.users = r; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+    this.cdr.markForCheck();
+    this.api.getUsers()
+      .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
+      .subscribe({ next: r => { this.users = r; this.cdr.markForCheck(); } });
   }
 
   toggleRole(role: string): void {
@@ -44,10 +45,19 @@ export class UsersComponent implements OnInit {
     if (!this.newRoles.length) { this.error = 'Select at least one role.'; return; }
     this.error = '';
     this.saving = true;
-    this.api.createUser({ username: this.newUsername, password: this.newPassword, roles: [...this.newRoles] }).subscribe({
-      next: () => { this.saving = false; this.showForm = false; this.newUsername = ''; this.newPassword = ''; this.newRoles = ['User']; this.load(); },
-      error: err => { this.saving = false; this.error = err?.error?.message || 'Save failed.'; }
-    });
+    this.cdr.markForCheck();
+    this.api.createUser({ username: this.newUsername, password: this.newPassword, roles: [...this.newRoles] })
+      .pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => {
+          this.showForm = false;
+          this.newUsername = '';
+          this.newPassword = '';
+          this.newRoles = ['User'];
+          this.load();
+        },
+        error: err => { this.error = err?.error?.message || 'Save failed.'; this.cdr.markForCheck(); }
+      });
   }
 
   toggle(u: AdminUser): void {

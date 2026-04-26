@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { ChargeSlab } from '../../../core/models';
 
@@ -16,16 +17,16 @@ export class ChargeSlabsComponent implements OnInit {
   saving = false;
   error = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void { this.load(); }
 
   load(): void {
     this.loading = true;
-    this.api.getChargeSlabs(this.siteId).subscribe({
-      next: r => { this.slabs = r; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+    this.cdr.markForCheck();
+    this.api.getChargeSlabs(this.siteId)
+      .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
+      .subscribe({ next: r => { this.slabs = r; this.cdr.markForCheck(); } });
   }
 
   openForm(slab?: ChargeSlab): void {
@@ -41,10 +42,13 @@ export class ChargeSlabsComponent implements OnInit {
     }
     this.error = '';
     this.saving = true;
-    this.api.saveChargeSlab(this.form).subscribe({
-      next: () => { this.saving = false; this.showForm = false; this.load(); },
-      error: err => { this.saving = false; this.error = err?.error?.message || 'Save failed.'; }
-    });
+    this.cdr.markForCheck();
+    this.api.saveChargeSlab(this.form)
+      .pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => { this.showForm = false; this.load(); },
+        error: err => { this.error = err?.error?.message || 'Save failed.'; this.cdr.markForCheck(); }
+      });
   }
 
   delete(s: ChargeSlab): void {

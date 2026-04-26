@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
 import { KeyboardService } from '../../../core/services/keyboard.service';
 import { PendingTicket } from '../../../core/models';
@@ -15,24 +15,21 @@ export class SecondListComponent implements OnInit, OnDestroy {
   siteId = 1;
   search = '';
   tickets: PendingTicket[] = [];
+  filtered: PendingTicket[] = [];
   loading = false;
   selectedIndex = -1;
 
-  private search$ = new Subject<string>();
   private subs = new Subscription();
 
   constructor(
     private api: ApiService,
     private kb: KeyboardService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.load('');
-    this.subs.add(
-      this.search$.pipe(debounceTime(300), distinctUntilChanged())
-        .subscribe(q => this.load(q))
-    );
+    this.load();
     this.subs.add(
       this.kb.shortcuts$.subscribe(key => {
         if (key === 'Escape') this.router.navigate(['/dashboard']);
@@ -42,32 +39,60 @@ export class SecondListComponent implements OnInit, OnDestroy {
         if (key === 'Enter' && this.selectedIndex >= 0) this.openSelected();
       })
     );
+    setTimeout(() => (document.getElementById('search-input') as HTMLElement)?.focus(), 100);
   }
 
   ngOnDestroy(): void { this.subs.unsubscribe(); }
 
-  load(q: string): void {
+  load(): void {
     this.loading = true;
-    this.api.getPendingTickets(this.siteId, q).subscribe({
-      next: r => { this.tickets = r; this.loading = false; this.selectedIndex = r.length > 0 ? 0 : -1; },
-      error: () => { this.loading = false; }
-    });
+    this.cdr.markForCheck();
+    this.api.getPendingTickets(this.siteId)
+      .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: r => {
+          this.tickets = r;
+          this.applyFilter();
+        }
+      });
   }
 
   onSearch(val: string): void {
     this.search = val;
-    this.search$.next(val);
+    this.applyFilter();
+  }
+
+  private applyFilter(): void {
+    const q = this.search.trim().toLowerCase();
+    this.filtered = q
+      ? this.tickets.filter(t =>
+          t.vehicleLicensePlate.toLowerCase().includes(q) ||
+          t.ticketNumber.toLowerCase().includes(q) ||
+          t.serialNumber.toString().includes(q) ||
+          (t.clientName?.toLowerCase().includes(q) ?? false) ||
+          (t.driverName?.toLowerCase().includes(q) ?? false)
+        )
+      : [...this.tickets];
+    this.selectedIndex = this.filtered.length > 0 ? 0 : -1;
+    this.cdr.markForCheck();
+  }
+
+  onSearchKeydown(e: KeyboardEvent): void {
+    if (e.key === 'ArrowDown') { e.preventDefault(); this.moveSelection(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); this.moveSelection(-1); }
+    else if (e.key === 'Enter' && this.selectedIndex >= 0) { e.preventDefault(); this.openSelected(); }
   }
 
   moveSelection(delta: number): void {
-    if (!this.tickets.length) return;
-    this.selectedIndex = Math.max(0, Math.min(this.tickets.length - 1, this.selectedIndex + delta));
-    const row = document.querySelector(`#ticketRow${this.selectedIndex}`) as HTMLElement;
+    if (!this.filtered.length) return;
+    this.selectedIndex = Math.max(0, Math.min(this.filtered.length - 1, this.selectedIndex + delta));
+    this.cdr.markForCheck();
+    const row = document.getElementById(`ticketRow${this.selectedIndex}`);
     row?.scrollIntoView({ block: 'nearest' });
   }
 
   openSelected(): void {
-    const t = this.tickets[this.selectedIndex];
+    const t = this.filtered[this.selectedIndex];
     if (t) this.router.navigate(['/weighment/second', t.ticketId]);
   }
 

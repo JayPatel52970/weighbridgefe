@@ -2,54 +2,109 @@
   <h1 class="h3"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
 </div>
 
-<div class="row g-3">
-  <div class="col-md-6 col-lg-4">
-    <div class="card border-primary h-100 hover-card" style="cursor:pointer" routerLink="/weighment/first">
-      <div class="card-body text-center py-4">
-        <i class="bi bi-plus-circle fs-1 text-primary mb-3 d-block"></i>
-        <h4 class="mb-1">New Weighment</h4>
-        <p class="text-muted mb-0">First weighment entry</p>
-        <span class="badge bg-primary mt-2">F1</span>
+<div class="row g-3 align-items-start">
+
+  <!-- Left: nav cards + shortcuts -->
+  <div class="col-lg-7">
+    <div class="row g-3">
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-primary h-100 hover-card" style="cursor:pointer" routerLink="/weighment/first">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-plus-circle fs-1 text-primary mb-3 d-block"></i>
+            <h4 class="mb-1">New Weighment</h4>
+            <p class="text-muted mb-0">First weighment entry</p>
+            <span class="badge bg-primary mt-2">F1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-success h-100 hover-card" style="cursor:pointer" routerLink="/weighment/second">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-clipboard-check fs-1 text-success mb-3 d-block"></i>
+            <h4 class="mb-1">Second Weighment</h4>
+            <p class="text-muted mb-0">Complete pending tickets</p>
+            <span class="badge bg-success mt-2">F2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-info h-100 hover-card" style="cursor:pointer" routerLink="/reports">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-bar-chart fs-1 text-info mb-3 d-block"></i>
+            <h4 class="mb-1">Reports</h4>
+            <p class="text-muted mb-0">View weighment reports</p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-6 col-lg-4">
-    <div class="card border-success h-100 hover-card" style="cursor:pointer" routerLink="/weighment/second">
-      <div class="card-body text-center py-4">
-        <i class="bi bi-clipboard-check fs-1 text-success mb-3 d-block"></i>
-        <h4 class="mb-1">Second Weighment</h4>
-        <p class="text-muted mb-0">Complete pending tickets</p>
-        <span class="badge bg-success mt-2">F2</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6 col-lg-4">
-    <div class="card border-info h-100 hover-card" style="cursor:pointer" routerLink="/reports">
-      <div class="card-body text-center py-4">
-        <i class="bi bi-bar-chart fs-1 text-info mb-3 d-block"></i>
-        <h4 class="mb-1">Reports</h4>
-        <p class="text-muted mb-0">View weighment reports</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row mt-3">
-  <div class="col-12">
-    <div class="card border-info">
-      <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-keyboard me-2"></i>Keyboard Shortcuts</h5>
-        <div class="row g-2">
-          <div class="col-md-4"><kbd>F1</kbd> New Weighment</div>
-          <div class="col-md-4"><kbd>F2</kbd> Second Weighment (Pending List)</div>
-          <div class="col-md-4"><kbd>Esc</kbd> Go to Dashboard</div>
-          <div class="col-md-4"><kbd>↑ ↓</kbd> Navigate table rows</div>
-          <div class="col-md-4"><kbd>Enter</kbd> Open selected row / Save form</div>
-          <div class="col-md-4"><kbd>Ctrl+P</kbd> Print (where applicable)</div>
+    <div class="row mt-3">
+      <div class="col-12">
+        <div class="card border-info">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-keyboard me-2"></i>Keyboard Shortcuts</h5>
+            <div class="row g-2">
+              <div class="col-md-4"><kbd>F1</kbd> New Weighment</div>
+              <div class="col-md-4"><kbd>F2</kbd> Second Weighment (Pending List)</div>
+              <div class="col-md-4"><kbd>Esc</kbd> Go to Dashboard</div>
+              <div class="col-md-4"><kbd>↑ ↓</kbd> Navigate table rows</div>
+              <div class="col-md-4"><kbd>Enter</kbd> Open selected row / Save form</div>
+              <div class="col-md-4"><kbd>Ctrl+P</kbd> Print (where applicable)</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Right: live weight panel (same size as first weighment) -->
+  <div class="col-lg-5 no-print">
+    <div class="wp">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center">
+          <span class="wp-live-dot" [class.on]="weightState === 'connected'" [class.warn]="weightState === 'reconnecting'" [class.off]="weightState === 'disconnected'"></span>
+          <span class="wp-tag">Live Scale</span>
+        </div>
+        <span class="wp-conn" [class.ok]="weightState === 'connected'" [class.warn]="weightState === 'reconnecting'" [class.off]="weightState === 'disconnected'">
+          {{ weightState === 'connected' ? 'CONNECTED' : weightState === 'reconnecting' ? 'RECONNECT...' : 'OFFLINE' }}
+        </span>
+      </div>
+
+      <div class="wp-display">
+        <div class="wp-digits">{{ liveWeight?.weight ?? 0 | number:'1.0-0' }}</div>
+        <div class="wp-unit">K &nbsp; G</div>
+        <div class="d-flex justify-content-between align-items-center mt-2">
+          @if (liveWeight?.isStable) {
+            <span class="wp-stable" style="font-size:.6rem;letter-spacing:.12em">&#9632; STABLE</span>
+          } @else {
+            <span class="wp-motion" style="font-size:.6rem;letter-spacing:.05em">&#9651; MOTION</span>
+          }
+          <span style="font-size:.6rem;color:#374151;letter-spacing:.05em">{{ liveWeight?.mode ?? '—' }}</span>
+        </div>
+      </div>
+
+      <div class="wp-modes">
+        <div class="wp-mode">GROSS</div>
+        <div class="wp-mode">NET</div>
+        <div class="wp-mode">TARE</div>
+      </div>
+
+      <hr class="wp-div">
+
+      <div class="wp-label mb-2">Quick Actions</div>
+      <div class="d-flex flex-column gap-2">
+        <button class="btn btn-primary btn-sm" routerLink="/weighment/first">
+          <i class="bi bi-plus-circle me-1"></i>New Weighment <kbd class="ms-1">F1</kbd>
+        </button>
+        <button class="btn btn-success btn-sm" routerLink="/weighment/second">
+          <i class="bi bi-clipboard-check me-1"></i>Second Weighment <kbd class="ms-1">F2</kbd>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </div>

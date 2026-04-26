@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { CameraSettings, CameraKind, CameraProtocol } from '../../../core/models';
 
@@ -18,16 +19,16 @@ export class CamerasComponent implements OnInit {
   CameraKind = CameraKind;
   CameraProtocol = CameraProtocol;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void { this.load(); }
 
   load(): void {
     this.loading = true;
-    this.api.getCameras(this.siteId).subscribe({
-      next: r => { this.cameras = r; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+    this.cdr.markForCheck();
+    this.api.getCameras(this.siteId)
+      .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
+      .subscribe({ next: r => { this.cameras = r; this.cdr.markForCheck(); } });
   }
 
   openForm(cam?: CameraSettings): void {
@@ -43,10 +44,13 @@ export class CamerasComponent implements OnInit {
     if (!this.editCamera) return;
     this.error = '';
     this.saving = true;
-    this.api.saveCamera(this.editCamera).subscribe({
-      next: () => { this.saving = false; this.editCamera = null; this.load(); },
-      error: err => { this.saving = false; this.error = err?.error?.message || 'Save failed.'; }
-    });
+    this.cdr.markForCheck();
+    this.api.saveCamera(this.editCamera)
+      .pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => { this.editCamera = null; this.load(); },
+        error: err => { this.error = err?.error?.message || 'Save failed.'; this.cdr.markForCheck(); }
+      });
   }
 
   delete(cam: CameraSettings): void {

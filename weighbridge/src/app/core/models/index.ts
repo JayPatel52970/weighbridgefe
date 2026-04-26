@@ -36,6 +36,18 @@ export enum ChargeSuggestionBasis {
   CapturedTareWeight = 2
 }
 
+export enum WeighmentStatus {
+  PendingSecondWeight = 0,
+  Completed = 1,
+  Cancelled = 2
+}
+
+export enum PaymentStatus {
+  Pending = 0,
+  PartiallyPaid = 1,
+  Paid = 2
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export interface LoginRequest {
@@ -189,4 +201,53 @@ export interface CreateUserRequest {
   username: string;
   password: string;
   roles: string[];
+}
+
+// ─── Reports ──────────────────────────────────────────────────────────────────
+
+export interface TodaysCollection {
+  date: string;
+  ticketCount: number;
+  completedCount: number;
+  pendingSecondCount: number;
+  totalCharges: number;
+  amountPaid: number;
+  pendingAmount: number;
+}
+
+export interface LedgerItem {
+  ticketId: string;
+  siteId: number;
+  serialNumber: number;
+  ticketNumber: string;
+  vehicleLicensePlate: string;
+  clientName: string | null;
+  materialName: string | null;
+  driverName: string;
+  firstWeight: number;
+  firstWeighType: FirstWeighType;
+  firstWeightDateTime: string;
+  secondWeight: number | null;
+  secondWeightDateTime: string | null;
+  netWeight: number | null;
+  status: WeighmentStatus;
+  totalCharges: number;
+  amountPaid: number;
+  paymentStatus: PaymentStatus;
+  paymentMode: PaymentMode;
+}
+
+export interface AdminLedgerItem extends LedgerItem {
+  createdBy: string;
+}
+
+// ─── Realtime ─────────────────────────────────────────────────────────────────
+
+export interface WeightReadingDto {
+  siteId: number;
+  weight: number;
+  unit: string;
+  isStable: boolean;
+  mode: string;
+  timestamp: string;
 }
