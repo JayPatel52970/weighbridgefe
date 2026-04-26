@@ -4,7 +4,8 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
-  standalone: false
+  standalone: false,
+  styles: [':host { display: contents; }']
 })
 export class SidebarComponent {
   constructor(public auth: AuthService) {}

@@ -5,7 +5,8 @@ import { SavedProfile } from '../../core/models';
 @Component({
   selector: 'app-topnav',
   templateUrl: './topnav.component.html',
-  standalone: false
+  standalone: false,
+  styles: [':host { display: contents; }']
 })
 export class TopnavComponent {
   showLogoutDialog = false;
