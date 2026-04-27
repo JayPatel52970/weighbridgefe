@@ -1,14 +1,5 @@
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
-export enum VehicleType {
-  Unknown = 0,
-  Truck = 1,
-  Trailer = 2,
-  Tractor = 3,
-  Pickup = 4,
-  Other = 99
-}
-
 export enum FirstWeighType {
   Gross = 0,
   Tare = 1
@@ -75,9 +66,8 @@ export interface Vehicle {
   id: string;
   licensePlate: string;
   registeredTareWeight?: number;
-  type: VehicleType;
+  vehicleTypeId: string | null;
   defaultCharge?: number;
-  typeImageUrl?: string;
 }
 
 export interface Client {
@@ -157,6 +147,20 @@ export interface SecondWeighmentResponse {
 }
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
+
+export interface SiteInfo {
+  siteId: number;
+  name?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  pincode?: string;
+  district?: string;
+  state?: string;
+  country?: string;
+  phoneNumber1?: string;
+  phoneNumber2?: string;
+  otherInformation?: string;
+}
 
 export interface SiteSettings {
   siteId: number;
@@ -239,6 +243,113 @@ export interface LedgerItem {
 
 export interface AdminLedgerItem extends LedgerItem {
   createdBy: string;
+}
+
+// ─── Ticket Details ───────────────────────────────────────────────────────────
+
+export interface TicketDetailsDto {
+  ticketId: string;
+  siteId: number;
+  serialNumber: number;
+  ticketNumber: string;
+
+  vehicleLicensePlate: string;
+  vehicleTypeId: string | null;
+  vehicleTypeCode: string | null;
+  vehicleTypeDisplayName: string | null;
+  vehicleTypePrice: number | null;
+  vehicleRegisteredTareWeight: number | null;
+
+  clientId: string | null;
+  clientName: string | null;
+
+  materialId: string | null;
+  materialName: string | null;
+
+  driverName: string;
+
+  firstWeight: number;
+  firstWeighType: FirstWeighType;
+  firstWeightDateTime: string;
+  firstWeightVehicleImageUrl: string;
+  firstWeightOperatorImageUrl: string;
+
+  secondWeight: number | null;
+  secondWeightDateTime: string | null;
+  secondWeightVehicleImageUrl: string;
+  secondWeightOperatorImageUrl: string;
+
+  netWeight: number | null;
+  grossWeight: number | null;
+  tareWeight: number | null;
+
+  status: WeighmentStatus;
+
+  isChargeSuggestionEnabled: boolean;
+  suggestedCharges: number | null;
+
+  totalCharges: number;
+  amountPaid: number;
+  paymentStatus: string;
+  paymentMode: PaymentMode;
+
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string | null;
+}
+
+// ─── One-Go ───────────────────────────────────────────────────────────────────
+
+export interface CreateOneGoWeighmentRequest {
+  siteId: number;
+  vehicleLicensePlate: string;
+  clientId?: string | null;
+  materialId?: string | null;
+  driverName?: string;
+  grossWeight: number;
+  knownTareWeight: number;
+  totalCharges?: number | null;
+  amountPaid: number;
+  paymentMode: PaymentMode;
+  captureVehicleImage: boolean;
+  captureOperatorImage: boolean;
+  printRequested: boolean;
+}
+
+export interface CreateOneGoWeighmentResult {
+  ticketId: string;
+  ticketNumber: string;
+  serialNumber: number;
+  grossWeight: number;
+  tareWeight: number;
+  netWeight: number;
+  suggestedCharges: number;
+  totalCharges: number;
+  amountPaid: number;
+  paymentStatus: string;
+  printAllowed: boolean;
+  printBlockedReason?: string;
+}
+
+// ─── Vehicle Type Config (Admin) ──────────────────────────────────────────────
+
+export interface VehicleTypeConfig {
+  id: string;
+  siteId: number;
+  code: string;
+  displayName: string;
+  price: number;
+  imageUrl?: string | null;
+}
+
+export interface UpsertVehicleTypeRequest {
+  id?: string | null;
+  siteId: number;
+  code: string;
+  displayName: string;
+  price: number;
+  existingImageUrl?: string | null;
 }
 
 // ─── Realtime ─────────────────────────────────────────────────────────────────

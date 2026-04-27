@@ -19,12 +19,34 @@
       </div>
 
       <div class="col-md-6 col-lg-4">
-        <div class="card border-success h-100 hover-card" style="cursor:pointer" routerLink="/weighment/second">
+        <div class="card border-success h-100 hover-card" style="cursor:pointer" routerLink="/weighment/second-direct">
           <div class="card-body text-center py-4">
-            <i class="bi bi-clipboard-check fs-1 text-success mb-3 d-block"></i>
-            <h4 class="mb-1">Second Weighment</h4>
-            <p class="text-muted mb-0">Complete pending tickets</p>
+            <i class="bi bi-lightning-charge fs-1 text-success mb-3 d-block"></i>
+            <h4 class="mb-1">Direct Complete</h4>
+            <p class="text-muted mb-0">Complete by ticket number</p>
             <span class="badge bg-success mt-2">F2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-4">
+        <div class="card border-primary h-100 hover-card" style="cursor:pointer" routerLink="/weighment/one-go">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-arrow-left-right fs-1 text-primary mb-3 d-block"></i>
+            <h4 class="mb-1">One-Go</h4>
+            <p class="text-muted mb-0">Gross + known tare in one shot</p>
+            <span class="badge bg-primary mt-2">F5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-4">
+        <div class="card border-secondary h-100 hover-card" style="cursor:pointer" routerLink="/weighment/second">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-clipboard-check fs-1 text-secondary mb-3 d-block"></i>
+            <h4 class="mb-1">Ticket List</h4>
+            <p class="text-muted mb-0">Complete pending tickets</p>
+            <span class="badge bg-secondary mt-2">F3</span>
           </div>
         </div>
       </div>
@@ -47,10 +69,12 @@
             <h5 class="card-title"><i class="bi bi-keyboard me-2"></i>Keyboard Shortcuts</h5>
             <div class="row g-2">
               <div class="col-md-4"><kbd>F1</kbd> New Weighment</div>
-              <div class="col-md-4"><kbd>F2</kbd> Second Weighment (Pending List)</div>
+              <div class="col-md-4"><kbd>F2</kbd> Direct Complete</div>
+              <div class="col-md-4"><kbd>F3</kbd> Ticket List</div>
+              <div class="col-md-4"><kbd>F5</kbd> One-Go Weighment</div>
               <div class="col-md-4"><kbd>Esc</kbd> Go to Dashboard</div>
-              <div class="col-md-4"><kbd>↑ ↓</kbd> Navigate table rows</div>
-              <div class="col-md-4"><kbd>Enter</kbd> Open selected row / Save form</div>
+              <div class="col-md-4"><kbd>↑ ↓</kbd> Navigate / step form</div>
+              <div class="col-md-4"><kbd>Enter</kbd> Select / save form</div>
               <div class="col-md-4"><kbd>Ctrl+P</kbd> Print (where applicable)</div>
             </div>
           </div>
@@ -99,8 +123,11 @@
         <button class="btn btn-primary btn-sm" routerLink="/weighment/first">
           <i class="bi bi-plus-circle me-1"></i>New Weighment <kbd class="ms-1">F1</kbd>
         </button>
-        <button class="btn btn-success btn-sm" routerLink="/weighment/second">
-          <i class="bi bi-clipboard-check me-1"></i>Second Weighment <kbd class="ms-1">F2</kbd>
+        <button class="btn btn-success btn-sm" routerLink="/weighment/second-direct">
+          <i class="bi bi-lightning-charge me-1"></i>Direct Complete <kbd class="ms-1">F2</kbd>
+        </button>
+        <button class="btn btn-outline-success btn-sm" routerLink="/weighment/second">
+          <i class="bi bi-clipboard-check me-1"></i>Ticket List <kbd class="ms-1">F3</kbd>
         </button>
       </div>
 

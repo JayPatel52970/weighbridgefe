@@ -34,6 +34,8 @@ export class SecondListComponent implements OnInit, OnDestroy {
       this.kb.shortcuts$.subscribe(key => {
         if (key === 'Escape') this.router.navigate(['/dashboard']);
         if (key === 'F1') this.router.navigate(['/weighment/first']);
+        if (key === 'F2') this.router.navigate(['/weighment/second-direct']);
+        if (key === 'F5') this.router.navigate(['/weighment/one-go']);
         if (key === 'ArrowDown') this.moveSelection(1);
         if (key === 'ArrowUp') this.moveSelection(-1);
         if (key === 'Enter' && this.selectedIndex >= 0) this.openSelected();

@@ -1,8 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
-import { fromEvent, Subject } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
-export type ShortcutKey = 'F1' | 'F2' | 'Escape' | 'CtrlP' | 'ArrowUp' | 'ArrowDown' | 'Enter';
+export type ShortcutKey = 'F1' | 'F2' | 'F3' | 'F5' | 'Escape' | 'CtrlP' | 'ArrowUp' | 'ArrowDown' | 'Enter';
 
 @Injectable({ providedIn: 'root' })
 export class KeyboardService {
@@ -10,10 +9,10 @@ export class KeyboardService {
   shortcuts$ = this.shortcut$.asObservable();
 
   constructor(private zone: NgZone) {
-    this.zone.runOutsideAngular(() => {
-      fromEvent<KeyboardEvent>(document, 'keydown').subscribe(e => {
+    document.addEventListener('keydown', (e) => {
+      try {
         this.zone.run(() => this.handle(e));
-      });
+      } catch { /* prevent one bad subscriber from killing the listener */ }
     });
   }
 
@@ -23,6 +22,8 @@ export class KeyboardService {
 
     if (e.key === 'F1') { e.preventDefault(); this.shortcut$.next('F1'); return; }
     if (e.key === 'F2') { e.preventDefault(); this.shortcut$.next('F2'); return; }
+    if (e.key === 'F3') { e.preventDefault(); this.shortcut$.next('F3'); return; }
+    if (e.key === 'F5') { e.preventDefault(); this.shortcut$.next('F5'); return; }
     if (e.key === 'Escape') { this.shortcut$.next('Escape'); return; }
     if (e.ctrlKey && e.key === 'p') { e.preventDefault(); this.shortcut$.next('CtrlP'); return; }
 

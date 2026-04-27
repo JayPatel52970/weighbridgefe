@@ -8,6 +8,8 @@ import { CamerasComponent } from './cameras/cameras.component';
 import { UsersComponent } from './users/users.component';
 import { UploadsComponent } from './uploads/uploads.component';
 import { AdminReportsComponent } from './reports/admin-reports.component';
+import { VehicleTypesComponent } from './vehicle-types/vehicle-types.component';
+import { SiteInfoComponent } from './site-info/site-info.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 
 const routes: Routes = [
@@ -16,11 +18,13 @@ const routes: Routes = [
   { path: 'cameras', component: CamerasComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
   { path: 'users', component: UsersComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
   { path: 'uploads', component: UploadsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
-  { path: 'reports', component: AdminReportsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } }
+  { path: 'reports', component: AdminReportsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
+  { path: 'vehicle-types', component: VehicleTypesComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
+  { path: 'site-info', component: SiteInfoComponent, canActivate: [RoleGuard], data: { role: 'Admin' } }
 ];
 
 @NgModule({
-  declarations: [SettingsComponent, ChargeSlabsComponent, CamerasComponent, UsersComponent, UploadsComponent, AdminReportsComponent],
+  declarations: [SettingsComponent, ChargeSlabsComponent, CamerasComponent, UsersComponent, UploadsComponent, AdminReportsComponent, VehicleTypesComponent, SiteInfoComponent],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes)]
 })
 export class AdminModule {}

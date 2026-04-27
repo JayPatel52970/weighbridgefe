@@ -1,0 +1,113 @@
+<div class="mb-3"><h1 class="h3"><i class="bi bi-building me-2"></i>Site Information</h1></div>
+
+@if (loading) {
+  <div class="text-center p-4"><div class="spinner-border text-primary"></div></div>
+} @else {
+  <div class="card">
+    <div class="card-body">
+
+      @if (success) {
+        <div class="alert alert-success alert-dismissible">
+          <i class="bi bi-check-circle me-2"></i>Site information saved.
+          <button type="button" class="btn-close" (click)="success = false"></button>
+        </div>
+      }
+      @if (error) {
+        <div class="alert alert-danger">{{ error }}</div>
+      }
+
+      <div class="row g-4">
+
+        <!-- Basic Info -->
+        <div class="col-12">
+          <h5 class="mb-3 border-bottom pb-2"><i class="bi bi-info-circle me-2 text-primary"></i>Basic</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Site Name</label>
+              <input type="text" class="form-control" placeholder="My Weighbridge"
+                     [(ngModel)]="info.name" maxlength="128">
+            </div>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="col-12">
+          <h5 class="mb-3 border-bottom pb-2"><i class="bi bi-geo-alt me-2 text-primary"></i>Address</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Address Line 1</label>
+              <input type="text" class="form-control" placeholder="Street / Plot"
+                     [(ngModel)]="info.addressLine1" maxlength="256">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Address Line 2</label>
+              <input type="text" class="form-control" placeholder="Area / Landmark"
+                     [(ngModel)]="info.addressLine2" maxlength="256">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Pincode</label>
+              <input type="text" class="form-control" placeholder="123456"
+                     [(ngModel)]="info.pincode" maxlength="16">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">District</label>
+              <input type="text" class="form-control" placeholder="District"
+                     [(ngModel)]="info.district" maxlength="128">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">State</label>
+              <input type="text" class="form-control" placeholder="State"
+                     [(ngModel)]="info.state" maxlength="128">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Country</label>
+              <input type="text" class="form-control" placeholder="India"
+                     [(ngModel)]="info.country" maxlength="128">
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="col-12">
+          <h5 class="mb-3 border-bottom pb-2"><i class="bi bi-telephone me-2 text-primary"></i>Contact</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Phone Number 1</label>
+              <input type="tel" class="form-control" placeholder="9999999999"
+                     [(ngModel)]="info.phoneNumber1" maxlength="20">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Phone Number 2</label>
+              <input type="tel" class="form-control" placeholder="8888888888"
+                     [(ngModel)]="info.phoneNumber2" maxlength="20">
+            </div>
+          </div>
+        </div>
+
+        <!-- Other -->
+        <div class="col-12">
+          <h5 class="mb-3 border-bottom pb-2"><i class="bi bi-card-text me-2 text-primary"></i>Other</h5>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Other Information</label>
+              <textarea class="form-control" rows="3" placeholder="Any additional notes printed on tickets, etc."
+                        [(ngModel)]="info.otherInformation" maxlength="512"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-4">
+        <button class="btn btn-primary btn-lg" (click)="save()" [disabled]="saving">
+          @if (saving) {
+            <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+          } @else {
+            <i class="bi bi-save me-1"></i>Save Site Info
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

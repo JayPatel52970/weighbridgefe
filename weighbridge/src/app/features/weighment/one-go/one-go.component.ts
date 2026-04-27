@@ -6,16 +6,16 @@ import { ApiService } from '../../../core/services/api.service';
 import { KeyboardService } from '../../../core/services/keyboard.service';
 import { RealtimeWeightService, ConnectionState } from '../../../core/realtime/realtime-weight.service';
 import {
-  Vehicle, Client, Material, VehicleTypeConfig,
-  FirstWeighmentRequest, FirstWeighmentResponse,
-  FirstWeighType, PaymentMode, WeightReadingDto
+  Vehicle, Client, Material,
+  CreateOneGoWeighmentRequest, CreateOneGoWeighmentResult,
+  PaymentMode, WeightReadingDto
 } from '../../../core/models';
 
-type Step = 'weighType' | 'vehicle' | 'vehicleType' | 'charges' | 'paymentMode' | 'paymentAmount' | 'material' | 'client' | 'driverName' | 'confirm';
+type Step = 'vehicle' | 'grossWeight' | 'tareWeight' | 'charges' | 'paymentMode' | 'paymentAmount' | 'material' | 'client' | 'driverName' | 'confirm';
 
 @Component({
-  selector: 'app-first-weighment',
-  templateUrl: './first-weighment.component.html',
+  selector: 'app-one-go',
+  templateUrl: './one-go.component.html',
   standalone: false,
   styles: [`
     .step-row { display:flex; align-items:flex-start; gap:14px; padding:14px 20px; border-left:3px solid transparent; transition:all .15s ease; opacity:.45; }
@@ -32,9 +32,8 @@ type Step = 'weighType' | 'vehicle' | 'vehicleType' | 'charges' | 'paymentMode' 
     .step-err { font-size:.78rem; color:#dc3545; margin-top:4px; }
     .step-hint { font-size:.67rem; color:#adb5bd; margin-top:3px; }
 
-    /* Print overlay */
     .po-back { position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:1055; display:flex; align-items:center; justify-content:center; }
-    .po-card { background:#fff; border-radius:14px; width:460px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,.4); overflow:hidden; animation:poPop .18s ease; }
+    .po-card { background:#fff; border-radius:14px; width:480px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,.4); overflow:hidden; animation:poPop .18s ease; }
     @keyframes poPop { from{transform:scale(.93);opacity:0} to{transform:scale(1);opacity:1} }
     .po-head { background:linear-gradient(135deg,#198754 0%,#0d5e3e 100%); color:#fff; padding:20px 24px; }
     .po-body { padding:20px 24px; }
@@ -50,24 +49,22 @@ type Step = 'weighType' | 'vehicle' | 'vehicleType' | 'charges' | 'paymentMode' 
     }
   `]
 })
-export class FirstWeighmentComponent implements OnInit, OnDestroy {
-  readonly steps: Step[] = ['weighType', 'vehicle', 'vehicleType', 'charges', 'paymentMode', 'paymentAmount', 'material', 'client', 'driverName', 'confirm'];
+export class OneGoComponent implements OnInit, OnDestroy {
+  readonly steps: Step[] = ['vehicle', 'grossWeight', 'tareWeight', 'charges', 'paymentMode', 'paymentAmount', 'material', 'client', 'driverName', 'confirm'];
   currentStepIndex = 0;
   fieldErrors: Partial<Record<Step, string>> = {};
 
   siteId = 1;
-
-  firstWeighType = FirstWeighType.Gross;
 
   vehicleSearch = '';
   vehicleSuggestions: Vehicle[] = [];
   vehicleHighlight = -1;
   selectedVehicle: Vehicle | null = null;
 
-  vehicleTypes: VehicleTypeConfig[] = [];
-  selectedVehicleTypeId: string | null = null;
+  grossWeight: number | null = null;
+  tareWeight: number | null = null;
 
-  charges = 0;
+  totalCharges = 0;
   paymentMode = PaymentMode.Cash;
   paymentAmount = 0;
 
@@ -83,18 +80,19 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
 
   driverName = '';
 
-  liveWeight: WeightReadingDto | null = null;
-  weightState: ConnectionState = 'disconnected';
   captureVehicleImage = true;
   captureOperatorImage = false;
+  printRequested = true;
+
+  liveWeight: WeightReadingDto | null = null;
+  weightState: ConnectionState = 'disconnected';
 
   saving = false;
   error = '';
-  result: FirstWeighmentResponse | null = null;
+  result: CreateOneGoWeighmentResult | null = null;
   showPrint = false;
   printCount = 0;
 
-  FirstWeighType = FirstWeighType;
   PaymentMode = PaymentMode;
 
   private vehicleSearch$ = new Subject<string>();
@@ -115,9 +113,12 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
   isDone(s: Step): boolean { return this.currentStepIndex > this.steps.indexOf(s); }
 
   ngOnInit(): void {
-    this.api.getVehicleTypes(this.siteId).subscribe({ next: r => { this.vehicleTypes = r; this.cdr.markForCheck(); } });
     this.subs.add(
-      this.realtimeWeight.weight$.subscribe(w => { this.liveWeight = w; this.cdr.markForCheck(); })
+      this.realtimeWeight.weight$.subscribe(w => {
+        this.liveWeight = w;
+        if (w && this.isActive('grossWeight')) this.grossWeight = w.weightKg;
+        this.cdr.markForCheck();
+      })
     );
     this.subs.add(
       this.realtimeWeight.connectionState$.subscribe(s => { this.weightState = s; this.cdr.markForCheck(); })
@@ -143,20 +144,20 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
           if (this.showPrint) { this.showPrint = false; return; }
           this.router.navigate(['/dashboard']);
         }
+        if (key === 'F1') this.router.navigate(['/weighment/first']);
         if (key === 'F2') this.router.navigate(['/weighment/second-direct']);
         if (key === 'F3') this.router.navigate(['/weighment/second']);
-        if (key === 'F5') this.router.navigate(['/weighment/one-go']);
+        if (key === 'CtrlP' && this.result?.printAllowed) window.print();
       })
     );
-    setTimeout(() => this.focusStep('weighType'), 100);
+    setTimeout(() => this.focusStep('vehicle'), 100);
   }
 
   ngOnDestroy(): void { this.subs.unsubscribe(); }
 
   private focusStep(step: Step): void {
     setTimeout(() => {
-      const el = document.getElementById(`fld-${step}`) as HTMLElement | null;
-      el?.focus();
+      (document.getElementById(`fld-og-${step}`) as HTMLElement | null)?.focus();
     }, 40);
   }
 
@@ -218,34 +219,17 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
 
   private validateStep(step: Step): string {
     if (step === 'vehicle' && !this.vehicleSearch.trim()) return 'Vehicle number is required.';
+    if (step === 'grossWeight' && (!this.grossWeight || this.grossWeight <= 0)) return 'Gross weight is required and must be > 0.';
+    if (step === 'tareWeight' && (this.tareWeight === null || this.tareWeight < 0)) return 'Tare weight is required (enter 0 if empty).';
     return '';
   }
 
-  // ─── Weight type ──────────────────────────────────────────────────────────────
-
-  setWeighType(t: FirstWeighType): void {
-    this.firstWeighType = t;
-    this.advance('weighType');
-  }
-
-  onWeighTypeKey(e: KeyboardEvent): void {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      this.firstWeighType = this.firstWeighType === FirstWeighType.Gross ? FirstWeighType.Tare : FirstWeighType.Gross;
-      this.cdr.markForCheck();
-    } else if (e.key.toLowerCase() === 'g') { e.preventDefault(); this.setWeighType(FirstWeighType.Gross); }
-    else if (e.key.toLowerCase() === 't') { e.preventDefault(); this.setWeighType(FirstWeighType.Tare); }
-    else if (e.key === 'Enter') this.advance('weighType');
-    else if (e.key === 'ArrowDown') { e.preventDefault(); this.navigateDown(); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); this.navigateUp(); }
-  }
-
-  // ─── Vehicle ──────────────────────────────────────────────────────────────────
+  // ─── Vehicle ──────────────────────────────────────────────────────────────
 
   onVehicleInput(val: string): void {
     const upper = val.toUpperCase();
-    const el = document.getElementById('fld-vehicle') as HTMLInputElement | null;
-    if (el && el.value !== upper) { el.value = upper; }
+    const el = document.getElementById('fld-og-vehicle') as HTMLInputElement | null;
+    if (el && el.value !== upper) el.value = upper;
     this.vehicleSearch = upper;
     this.vehicleHighlight = -1;
     this.selectedVehicle = null;
@@ -258,8 +242,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.vehicleSearch = v.licensePlate;
     this.vehicleSuggestions = [];
     this.vehicleHighlight = -1;
-    this.selectedVehicleTypeId = v.vehicleTypeId;
-    if (v.defaultCharge != null) { this.charges = v.defaultCharge; this.paymentAmount = v.defaultCharge; }
+    if (v.defaultCharge != null) { this.totalCharges = v.defaultCharge; this.paymentAmount = v.defaultCharge; }
     this.advance('vehicle');
   }
 
@@ -272,37 +255,35 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.advance('vehicle');
   }
 
-  // ─── Vehicle type ─────────────────────────────────────────────────────────────
+  // ─── Gross Weight ─────────────────────────────────────────────────────────
 
-  setVehicleType(id: string): void {
-    this.selectedVehicleTypeId = id;
-    this.advance('vehicleType');
+  useLiveWeight(): void {
+    if (this.liveWeight) { this.grossWeight = this.liveWeight.weightKg; this.cdr.markForCheck(); }
   }
 
-  onVehicleTypeKey(e: KeyboardEvent): void {
-    const idx = this.vehicleTypes.findIndex(t => t.id === this.selectedVehicleTypeId);
-    if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      this.selectedVehicleTypeId = this.vehicleTypes[(idx + 1) % this.vehicleTypes.length]?.id ?? null;
-      this.cdr.markForCheck();
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      this.selectedVehicleTypeId = this.vehicleTypes[(idx - 1 + this.vehicleTypes.length) % this.vehicleTypes.length]?.id ?? null;
-      this.cdr.markForCheck();
-    } else if (e.key === 'Enter') {
-      this.advance('vehicleType');
-    } else if (e.key === 'ArrowDown') { e.preventDefault(); this.navigateDown(); }
+  onGrossWeightKey(e: KeyboardEvent): void {
+    if (e.key === 'Enter') { e.preventDefault(); this.advance('grossWeight'); }
+    else if (e.key.toLowerCase() === 'l') { e.preventDefault(); this.useLiveWeight(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); this.navigateDown(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); this.navigateUp(); }
   }
 
-  // ─── Charges ──────────────────────────────────────────────────────────────────
+  // ─── Tare Weight ─────────────────────────────────────────────────────────
+
+  onTareWeightKey(e: KeyboardEvent): void {
+    if (e.key === 'Enter') { e.preventDefault(); this.advance('tareWeight'); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); this.navigateDown(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); this.navigateUp(); }
+  }
+
+  // ─── Charges ──────────────────────────────────────────────────────────────
 
   onChargesEnter(): void {
-    this.paymentAmount = this.charges;
+    this.paymentAmount = this.totalCharges;
     this.advance('charges');
   }
 
-  // ─── Payment mode ─────────────────────────────────────────────────────────────
+  // ─── Payment Mode ─────────────────────────────────────────────────────────
 
   setPaymentMode(m: PaymentMode): void {
     this.paymentMode = m;
@@ -313,13 +294,9 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     const modes = [PaymentMode.Cash, PaymentMode.Online, PaymentMode.Credit];
     const idx = modes.indexOf(this.paymentMode);
     if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      this.paymentMode = modes[(idx + 1) % modes.length];
-      this.cdr.markForCheck();
+      e.preventDefault(); this.paymentMode = modes[(idx + 1) % modes.length]; this.cdr.markForCheck();
     } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      this.paymentMode = modes[(idx - 1 + modes.length) % modes.length];
-      this.cdr.markForCheck();
+      e.preventDefault(); this.paymentMode = modes[(idx - 1 + modes.length) % modes.length]; this.cdr.markForCheck();
     } else if (e.key.toLowerCase() === 'c') { e.preventDefault(); this.setPaymentMode(PaymentMode.Cash); }
     else if (e.key.toLowerCase() === 'o') { e.preventDefault(); this.setPaymentMode(PaymentMode.Online); }
     else if (e.key.toLowerCase() === 'r') { e.preventDefault(); this.setPaymentMode(PaymentMode.Credit); }
@@ -328,7 +305,11 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     else if (e.key === 'ArrowUp') { e.preventDefault(); this.navigateUp(); }
   }
 
-  // ─── Autocomplete helpers ─────────────────────────────────────────────────────
+  payModeName(m: PaymentMode): string {
+    return m === PaymentMode.Cash ? 'Cash' : m === PaymentMode.Online ? 'Online' : 'Credit';
+  }
+
+  // ─── Autocomplete ─────────────────────────────────────────────────────────
 
   onMaterialInput(val: string): void {
     this.materialSearch = val;
@@ -380,7 +361,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.advance('client');
   }
 
-  // ─── Save & Print ─────────────────────────────────────────────────────────────
+  // ─── Save & Print ─────────────────────────────────────────────────────────
 
   save(): void {
     if (this.saving) return;
@@ -388,22 +369,23 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.saving = true;
     this.cdr.markForCheck();
 
-    const req: FirstWeighmentRequest = {
+    const req: CreateOneGoWeighmentRequest = {
       siteId: this.siteId,
       vehicleLicensePlate: this.selectedVehicle?.licensePlate ?? this.vehicleSearch.trim().toUpperCase(),
       clientId: this.selectedClient?.id ?? null,
       materialId: this.selectedMaterial?.id ?? null,
       driverName: this.driverName,
-      firstWeight: this.liveWeight?.weightKg ?? 0,
-      firstWeighType: this.firstWeighType,
-      totalCharges: this.charges,
+      grossWeight: this.grossWeight!,
+      knownTareWeight: this.tareWeight!,
+      totalCharges: this.totalCharges > 0 ? this.totalCharges : null,
       amountPaid: this.paymentAmount,
       paymentMode: this.paymentMode,
       captureVehicleImage: this.captureVehicleImage,
-      captureOperatorImage: this.captureOperatorImage
+      captureOperatorImage: this.captureOperatorImage,
+      printRequested: this.printRequested
     };
 
-    this.api.firstWeighment(req)
+    this.api.oneGoWeighment(req)
       .pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: res => {
@@ -411,7 +393,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
           this.showPrint = true;
           this.printCount = 0;
           this.cdr.markForCheck();
-          setTimeout(() => (document.getElementById('print-btn') as HTMLElement)?.focus(), 60);
+          setTimeout(() => (document.getElementById('og-print-btn') as HTMLElement)?.focus(), 60);
         },
         error: err => {
           this.error = err?.error?.message || err?.error?.title || 'Save failed.';
@@ -420,38 +402,20 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       });
   }
 
-  doPrint(): void {
-    this.printCount++;
-    this.cdr.markForCheck();
-    window.print();
-  }
+  doPrint(): void { this.printCount++; this.cdr.markForCheck(); window.print(); }
 
   newEntry(): void {
     this.currentStepIndex = 0;
     this.fieldErrors = {};
-    this.firstWeighType = FirstWeighType.Gross;
     this.vehicleSearch = ''; this.vehicleSuggestions = []; this.selectedVehicle = null;
-    this.selectedVehicleTypeId = null;
-    this.charges = 0; this.paymentMode = PaymentMode.Cash; this.paymentAmount = 0;
+    this.grossWeight = null; this.tareWeight = null;
+    this.totalCharges = 0; this.paymentMode = PaymentMode.Cash; this.paymentAmount = 0;
     this.materialSearch = ''; this.materialSuggestions = []; this.selectedMaterial = null;
     this.clientSearch = ''; this.clientSuggestions = []; this.selectedClient = null;
     this.driverName = '';
     this.saving = false; this.error = ''; this.result = null;
     this.showPrint = false; this.printCount = 0;
     this.cdr.markForCheck();
-    this.focusStep('weighType');
-  }
-
-  payModeName(m: PaymentMode): string {
-    return m === PaymentMode.Cash ? 'Cash' : m === PaymentMode.Online ? 'Online' : 'Credit';
-  }
-
-  weighTypeName(t: FirstWeighType): string {
-    return t === FirstWeighType.Gross ? 'Gross' : 'Tare';
-  }
-
-  vehicleTypeName(id: string | null): string {
-    if (!id) return '—';
-    return this.vehicleTypes.find(t => t.id === id)?.displayName ?? '—';
+    this.focusStep('vehicle');
   }
 }

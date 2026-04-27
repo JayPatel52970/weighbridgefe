@@ -6,8 +6,10 @@ import {
   Vehicle, Client, Material,
   FirstWeighmentRequest, FirstWeighmentResponse,
   PendingTicket, SecondWeighmentRequest, SecondWeighmentResponse,
-  SiteSettings, ChargeSlab, CameraSettings, AdminUser, CreateUserRequest,
-  TodaysCollection, LedgerItem, AdminLedgerItem, WeighmentStatus
+  SiteInfo, SiteSettings, ChargeSlab, CameraSettings, AdminUser, CreateUserRequest,
+  TodaysCollection, LedgerItem, AdminLedgerItem, WeighmentStatus,
+  TicketDetailsDto, CreateOneGoWeighmentRequest, CreateOneGoWeighmentResult,
+  VehicleTypeConfig, UpsertVehicleTypeRequest
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -28,11 +30,6 @@ export class ApiService {
   }
   deleteVehicle(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/master/vehicles/${id}`);
-  }
-  uploadVehicleTypeImage(id: string, file: File): Observable<Vehicle> {
-    const fd = new FormData();
-    fd.append('file', file);
-    return this.http.post<Vehicle>(`${this.base}/api/master/vehicles/${id}/type-image`, fd);
   }
 
   // ─── Clients ──────────────────────────────────────────────────────────────
@@ -66,10 +63,24 @@ export class ApiService {
     if (search) params = params.set('search', search);
     return this.http.get<PendingTicket[]>(`${this.base}/api/tickets/pending-second`, { params });
   }
+  getTicketByNumber(ticketNumber: string, siteId: number): Observable<TicketDetailsDto> {
+    return this.http.get<TicketDetailsDto>(`${this.base}/api/tickets/by-number/${encodeURIComponent(ticketNumber)}`, { params: { siteId } });
+  }
+  oneGoWeighment(req: CreateOneGoWeighmentRequest): Observable<CreateOneGoWeighmentResult> {
+    return this.http.post<CreateOneGoWeighmentResult>(`${this.base}/api/tickets/one-go`, req);
+  }
   secondWeighment(siteId: number, req: SecondWeighmentRequest): Observable<SecondWeighmentResponse> {
     return this.http.post<SecondWeighmentResponse>(`${this.base}/api/tickets/second`, req, {
       params: { siteId }
     });
+  }
+
+  // ─── Site Info ────────────────────────────────────────────────────────────
+  getSiteInfo(siteId: number): Observable<SiteInfo> {
+    return this.http.get<SiteInfo>(`${this.base}/api/admin/site`, { params: { siteId } });
+  }
+  saveSiteInfo(info: SiteInfo): Observable<void> {
+    return this.http.post<void>(`${this.base}/api/admin/site`, info);
   }
 
   // ─── Admin Settings ───────────────────────────────────────────────────────
@@ -176,12 +187,23 @@ export class ApiService {
     return this.http.get<AdminLedgerItem[]>(`${this.base}/api/admin/reports/vehicle`, { params });
   }
 
-  // ─── Uploads ──────────────────────────────────────────────────────────────
-  uploadVehicleTypeGenericImage(file: File, vehicleType: string, siteId?: number): Observable<string> {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('VehicleType', vehicleType);
-    if (siteId != null) fd.append('SiteId', String(siteId));
-    return this.http.post(`${this.base}/api/admin/uploads/vehicle-type-image`, fd, { responseType: 'text' });
+  // ─── Vehicle Type Config ──────────────────────────────────────────────────
+  getVehicleTypes(siteId: number): Observable<VehicleTypeConfig[]> {
+    return this.http.get<VehicleTypeConfig[]>(`${this.base}/api/admin/vehicletypes`, { params: { siteId } });
   }
+  upsertVehicleType(req: UpsertVehicleTypeRequest, imageFile?: File | null): Observable<void> {
+    const fd = new FormData();
+    if (req.id) fd.append('Id', req.id);
+    fd.append('SiteId', String(req.siteId));
+    fd.append('Code', req.code);
+    fd.append('DisplayName', req.displayName);
+    fd.append('Price', String(req.price));
+    if (imageFile) fd.append('Image', imageFile);
+    if (req.existingImageUrl) fd.append('ExistingImageUrl', req.existingImageUrl);
+    return this.http.post<void>(`${this.base}/api/admin/vehicletypes`, fd);
+  }
+  deleteVehicleType(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/api/admin/vehicletypes/${id}`);
+  }
+
 }

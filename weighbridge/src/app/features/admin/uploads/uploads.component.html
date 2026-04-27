@@ -1,61 +1,8 @@
 <div class="mb-3"><h1 class="h3"><i class="bi bi-upload me-2"></i>Uploads</h1></div>
 
-<div class="row g-3">
-  <div class="col-md-6">
-    <div class="card border-primary">
-      <div class="card-header">
-        <h5 class="card-title mb-0">Upload Generic Vehicle Type Image</h5>
-      </div>
-      <div class="card-body">
-        <p class="text-muted small">
-          Upload a default image for a vehicle type (e.g. Truck icon).
-          Used when no specific image is set for a vehicle.
-        </p>
-
-        @if (genericResult) {
-          <div class="alert alert-success">
-            Upload successful. URL: <a [href]="genericResult" target="_blank">{{ genericResult }}</a>
-          </div>
-        }
-        @if (genericError) {
-          <div class="alert alert-danger">{{ genericError }}</div>
-        }
-
-        <div class="mb-3">
-          <label class="form-label">Vehicle Type</label>
-          <select class="form-select" [(ngModel)]="selectedVehicleType">
-            @for (t of vehicleTypeNames; track t) {
-              <option [value]="t">{{ t }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Image File</label>
-          <input type="file" class="form-control" accept="image/*" (change)="onGenericFile($event)">
-        </div>
-
-        <button class="btn btn-primary" (click)="uploadGeneric()" [disabled]="!genericFile || uploadingGeneric">
-          @if (uploadingGeneric) {
-            <span class="spinner-border spinner-border-sm me-1"></span>Uploading...
-          } @else {
-            <i class="bi bi-upload me-1"></i>Upload
-          }
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6">
-    <div class="card border-info">
-      <div class="card-header"><h5 class="card-title mb-0">Attach Image to Specific Vehicle</h5></div>
-      <div class="card-body">
-        <p class="text-muted">
-          To upload and attach an image to a specific vehicle, go to
-          <a routerLink="/master/vehicles">Master → Vehicles</a>
-          and use the upload button in the vehicle's row.
-        </p>
-      </div>
-    </div>
-  </div>
+<div class="alert alert-info">
+  <i class="bi bi-info-circle me-2"></i>
+  Vehicle type images are now managed directly on the
+  <a routerLink="/admin/vehicle-types" class="alert-link">Vehicle Type Pricing</a> page.
+  Use the edit button on any type row to upload or replace its image.
 </div>

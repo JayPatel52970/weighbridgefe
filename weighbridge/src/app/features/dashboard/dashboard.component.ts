@@ -35,7 +35,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subs.add(
       this.kb.shortcuts$.subscribe(key => {
         if (key === 'F1') this.router.navigate(['/weighment/first']);
-        if (key === 'F2') this.router.navigate(['/weighment/second']);
+        if (key === 'F2') this.router.navigate(['/weighment/second-direct']);
+        if (key === 'F3') this.router.navigate(['/weighment/second']);
+        if (key === 'F5') this.router.navigate(['/weighment/one-go']);
       })
     );
   }

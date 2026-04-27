@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
-import { Vehicle, VehicleType } from '../../../core/models';
+import { Vehicle, VehicleTypeConfig } from '../../../core/models';
 
 @Component({
   selector: 'app-vehicles',
@@ -11,20 +11,19 @@ import { Vehicle, VehicleType } from '../../../core/models';
 export class VehiclesComponent implements OnInit {
   search = '';
   vehicles: Vehicle[] = [];
+  vehicleTypes: VehicleTypeConfig[] = [];
   loading = false;
   showForm = false;
-  form: Partial<Vehicle> = { type: VehicleType.Truck };
+  form: Partial<Vehicle> = { vehicleTypeId: null };
   saving = false;
   error = '';
-  imageFile: File | null = null;
-  uploadingImageFor: string | null = null;
-
-  VehicleType = VehicleType;
-  vehicleTypes = Object.entries(VehicleType).filter(([, v]) => typeof v === 'number') as [string, number][];
 
   constructor(private api: ApiService) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+    this.api.getVehicleTypes(1).subscribe({ next: r => this.vehicleTypes = r });
+  }
 
   load(): void {
     this.loading = true;
@@ -33,12 +32,22 @@ export class VehiclesComponent implements OnInit {
       .subscribe({ next: r => this.vehicles = r });
   }
 
+  typeName(vehicleTypeId: string | null): string {
+    if (!vehicleTypeId) return '—';
+    return this.vehicleTypes.find(t => t.id === vehicleTypeId)?.displayName ?? '—';
+  }
+
+  typeImage(vehicleTypeId: string | null): string | null {
+    if (!vehicleTypeId) return null;
+    return this.vehicleTypes.find(t => t.id === vehicleTypeId)?.imageUrl ?? null;
+  }
+
   save(): void {
     if (!this.form.licensePlate?.trim()) { this.error = 'License plate is required.'; return; }
     this.error = '';
     this.saving = true;
     this.api.createVehicle({ ...this.form, licensePlate: this.form.licensePlate!.toUpperCase() }).subscribe({
-      next: () => { this.saving = false; this.showForm = false; this.form = { type: VehicleType.Truck }; this.load(); },
+      next: () => { this.saving = false; this.showForm = false; this.form = { vehicleTypeId: null }; this.load(); },
       error: err => { this.saving = false; this.error = err?.error?.message || 'Save failed.'; }
     });
   }
@@ -46,15 +55,5 @@ export class VehiclesComponent implements OnInit {
   delete(v: Vehicle): void {
     if (!confirm(`Delete vehicle ${v.licensePlate}?`)) return;
     this.api.deleteVehicle(v.id).subscribe(() => this.load());
-  }
-
-  onImageSelected(e: Event, vehicleId: string): void {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.uploadingImageFor = vehicleId;
-    this.api.uploadVehicleTypeImage(vehicleId, file).subscribe({
-      next: () => { this.uploadingImageFor = null; this.load(); },
-      error: () => { this.uploadingImageFor = null; }
-    });
   }
 }
