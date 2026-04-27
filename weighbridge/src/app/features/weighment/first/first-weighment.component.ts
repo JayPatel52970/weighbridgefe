@@ -392,7 +392,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       clientId: this.selectedClient?.id ?? null,
       materialId: this.selectedMaterial?.id ?? null,
       driverName: this.driverName,
-      firstWeight: this.liveWeight?.weight ?? 0,
+      firstWeight: this.liveWeight?.weightKg ?? 0,
       firstWeighType: this.firstWeighType,
       totalCharges: this.charges,
       amountPaid: this.paymentAmount,

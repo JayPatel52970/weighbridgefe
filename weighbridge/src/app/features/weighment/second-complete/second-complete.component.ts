@@ -100,7 +100,7 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
       this.realtimeWeight.weight$.subscribe(w => {
         this.liveWeight = w;
         if (w && this.isActive('secondWeight')) {
-          this.secondWeight = w.weight;
+          this.secondWeight = w.weightKg;
         }
         this.cdr.markForCheck();
       })
@@ -163,7 +163,7 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
   // ─── Second weight ────────────────────────────────────────────────────────────
 
   useLiveWeight(): void {
-    if (this.liveWeight) { this.secondWeight = this.liveWeight.weight; this.cdr.markForCheck(); }
+    if (this.liveWeight) { this.secondWeight = this.liveWeight.weightKg; this.cdr.markForCheck(); }
   }
 
   onSecondWeightKey(e: KeyboardEvent): void {

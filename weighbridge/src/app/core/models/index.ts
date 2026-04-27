@@ -245,9 +245,9 @@ export interface AdminLedgerItem extends LedgerItem {
 
 export interface WeightReadingDto {
   siteId: number;
-  weight: number;
-  unit: string;
+  weightKg: number;
+  raw: string;
   isStable: boolean;
-  mode: string;
-  timestamp: string;
+  mode?: string;
+  timestamp?: string;
 }

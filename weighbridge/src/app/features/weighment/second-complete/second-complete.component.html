@@ -164,7 +164,7 @@
         </div>
 
         <div class="wp-display">
-          <div class="wp-digits">{{ liveWeight?.weight ?? 0 | number:'1.0-0' }}</div>
+          <div class="wp-digits">{{ liveWeight?.weightKg ?? 0 | number:'1.0-0' }}</div>
           <div class="wp-unit">K &nbsp; G</div>
           <div class="d-flex justify-content-between align-items-center mt-2">
             @if (liveWeight?.isStable) {
