@@ -10,6 +10,8 @@ import { UploadsComponent } from './uploads/uploads.component';
 import { AdminReportsComponent } from './reports/admin-reports.component';
 import { VehicleTypesComponent } from './vehicle-types/vehicle-types.component';
 import { SiteInfoComponent } from './site-info/site-info.component';
+import { Rs232Component } from './rs232/rs232.component';
+import { PrinterSettingsComponent } from './printer-settings/printer-settings.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 
 const routes: Routes = [
@@ -20,11 +22,13 @@ const routes: Routes = [
   { path: 'uploads', component: UploadsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
   { path: 'reports', component: AdminReportsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
   { path: 'vehicle-types', component: VehicleTypesComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
-  { path: 'site-info', component: SiteInfoComponent, canActivate: [RoleGuard], data: { role: 'Admin' } }
+  { path: 'site-info', component: SiteInfoComponent, canActivate: [RoleGuard], data: { role: 'Admin' } },
+  { path: 'rs232', component: Rs232Component, canActivate: [RoleGuard], data: { role: 'Admin' } },
+  { path: 'printer-settings', component: PrinterSettingsComponent, canActivate: [RoleGuard], data: { role: 'Admin' } }
 ];
 
 @NgModule({
-  declarations: [SettingsComponent, ChargeSlabsComponent, CamerasComponent, UsersComponent, UploadsComponent, AdminReportsComponent, VehicleTypesComponent, SiteInfoComponent],
+  declarations: [SettingsComponent, ChargeSlabsComponent, CamerasComponent, UsersComponent, UploadsComponent, AdminReportsComponent, VehicleTypesComponent, SiteInfoComponent, Rs232Component, PrinterSettingsComponent],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes)]
 })
 export class AdminModule {}

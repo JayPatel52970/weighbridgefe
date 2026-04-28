@@ -8,6 +8,55 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+  <div id="google_translate_element" style="position:fixed;top:8px;right:160px;z-index:9999;"></div>
   <app-root></app-root>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+
+    // Prevent Google Translate from doing a full page reload in this SPA.
+    // When a language is selected, GT sets the googtrans cookie then calls
+    // location.reload(). We intercept that reload and re-init the widget
+    // in-place instead — the cookie is already set so GT translates the DOM.
+    (function () {
+      var _nativeReload = window.location.reload.bind(window.location);
+      var _gtChanging = false;
+
+      document.addEventListener('DOMContentLoaded', function () {
+        new MutationObserver(function () {
+          var sel = document.querySelector('#google_translate_element select');
+          if (sel && !sel._gtWatched) {
+            sel._gtWatched = true;
+            sel.addEventListener('change', function () {
+              _gtChanging = true;
+              setTimeout(function () { _gtChanging = false; }, 1500);
+            });
+          }
+        }).observe(document.getElementById('google_translate_element'), { childList: true, subtree: true });
+      });
+
+      try {
+        Object.defineProperty(window.location, 'reload', {
+          configurable: true,
+          writable: true,
+          value: function () {
+            if (_gtChanging) {
+              _gtChanging = false;
+              var el = document.getElementById('google_translate_element');
+              if (el) { el.innerHTML = ''; googleTranslateElementInit(); }
+            } else {
+              _nativeReload();
+            }
+          }
+        });
+      } catch (e) { /* browser may not allow overriding location.reload */ }
+    })();
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>

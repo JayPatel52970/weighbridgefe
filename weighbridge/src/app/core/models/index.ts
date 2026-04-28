@@ -39,6 +39,24 @@ export enum PaymentStatus {
   Paid = 2
 }
 
+export enum PrinterType {
+  Laser = 0,
+  DotMatrix = 1
+}
+
+export enum PrinterConnectedOsType {
+  Windows64 = 0,
+  Windows32 = 1,
+  Linux64 = 2,
+  Linux32 = 3,
+  Arm = 4
+}
+
+export enum PrinterOrientation {
+  Portrait = 0,
+  Landscape = 1
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export interface LoginRequest {
@@ -72,6 +90,21 @@ export interface Vehicle {
 
 export interface Client {
   id: string;
+  name: string;
+  phoneNumber?: string;
+  whatsAppNumber?: string;
+  isSendHalfTicketOnWhatsApp?: boolean;
+  isSendFullTicketOnWhatsApp?: boolean;
+  allowPrintBeforeFullPayment?: boolean;
+  createdAt?: string;
+  createdBy?: string;
+  updatedAt?: string | null;
+  updatedBy?: string;
+  isDeleted?: boolean;
+}
+
+export interface UpsertClientRequest {
+  id?: string | null;
   name: string;
   phoneNumber?: string;
   whatsAppNumber?: string;
@@ -147,6 +180,22 @@ export interface SecondWeighmentResponse {
 }
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
+
+export interface Rs232Settings {
+  siteId: number;
+  enabled: boolean;
+  portName: string;
+  baudRate: number;
+  dataBits: number;
+  parity: number;
+  stopBits: number;
+  handshake: number;
+  readTimeoutMs: number;
+  newLine: string;
+  weightRegex: string;
+  stableRegex?: string | null;
+  unitMultiplierToKg: number;
+}
 
 export interface SiteInfo {
   siteId: number;
@@ -350,6 +399,50 @@ export interface UpsertVehicleTypeRequest {
   displayName: string;
   price: number;
   existingImageUrl?: string | null;
+}
+
+// ─── Printer Settings ─────────────────────────────────────────────────────────
+
+export interface PrinterSettings {
+  id: string;
+  siteId: number;
+  enabled: boolean;
+  printerType: PrinterType;
+  connectedOsType: PrinterConnectedOsType;
+  printerName: string;
+  defaultPrintFormat: string;
+  paperWidth: number;
+  linesPerPage: number;
+  topMargin: number;
+  bottomMargin: number;
+  isCondensed: boolean;
+  isDoubleWidth: boolean;
+  paperSize: string;
+  orientation: PrinterOrientation;
+  margin: number;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string | null;
+  updatedBy: string | null;
+  isDeleted: boolean;
+}
+
+export interface UpsertPrinterSettingsRequest {
+  siteId: number;
+  enabled: boolean;
+  printerType: PrinterType;
+  connectedOsType: PrinterConnectedOsType;
+  printerName: string;
+  defaultPrintFormat: string;
+  paperWidth: number;
+  linesPerPage: number;
+  topMargin: number;
+  bottomMargin: number;
+  isCondensed: boolean;
+  isDoubleWidth: boolean;
+  paperSize: string;
+  orientation: PrinterOrientation;
+  margin: number;
 }
 
 // ─── Realtime ─────────────────────────────────────────────────────────────────

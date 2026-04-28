@@ -74,6 +74,13 @@
           </a>
         </li>
 
+        <li class="nav-item">
+          <a routerLink="/master/clients" routerLinkActive="active" class="nav-link">
+            <i class="nav-icon bi bi-people"></i>
+            <p>Clients</p>
+          </a>
+        </li>
+
         @if (isAdmin) {
           <li class="nav-header">ADMIN</li>
 
@@ -107,6 +114,11 @@
             </a>
           </li>
           <li class="nav-item">
+            <a routerLink="/admin/rs232" routerLinkActive="active" class="nav-link">
+              <i class="nav-icon bi bi-usb-symbol"></i><p>Scale / RS232</p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a routerLink="/admin/settings" routerLinkActive="active" class="nav-link">
               <i class="nav-icon bi bi-gear"></i><p>Settings</p>
             </a>
@@ -124,6 +136,11 @@
           <li class="nav-item">
             <a routerLink="/admin/cameras" routerLinkActive="active" class="nav-link">
               <i class="nav-icon bi bi-camera"></i><p>Camera Settings</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/admin/printer-settings" routerLinkActive="active" class="nav-link">
+              <i class="nav-icon bi bi-printer"></i><p>Printer Settings</p>
             </a>
           </li>
           <li class="nav-item">

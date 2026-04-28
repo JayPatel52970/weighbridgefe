@@ -6,10 +6,12 @@ import {
   Vehicle, Client, Material,
   FirstWeighmentRequest, FirstWeighmentResponse,
   PendingTicket, SecondWeighmentRequest, SecondWeighmentResponse,
-  SiteInfo, SiteSettings, ChargeSlab, CameraSettings, AdminUser, CreateUserRequest,
+  Rs232Settings, SiteInfo, SiteSettings, ChargeSlab, CameraSettings, AdminUser, CreateUserRequest,
   TodaysCollection, LedgerItem, AdminLedgerItem, WeighmentStatus,
   TicketDetailsDto, CreateOneGoWeighmentRequest, CreateOneGoWeighmentResult,
-  VehicleTypeConfig, UpsertVehicleTypeRequest
+  VehicleTypeConfig, UpsertVehicleTypeRequest,
+  PrinterSettings, UpsertPrinterSettingsRequest,
+  UpsertClientRequest
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -33,11 +35,14 @@ export class ApiService {
   }
 
   // ─── Clients ──────────────────────────────────────────────────────────────
+  listClients(skip = 0, take = 2000): Observable<Client[]> {
+    return this.http.get<Client[]>(`${this.base}/api/master/clients`, { params: new HttpParams().set('skip', skip).set('take', take) });
+  }
   searchClients(q: string): Observable<Client[]> {
     return this.http.get<Client[]>(`${this.base}/api/master/clients/search`, { params: { q } });
   }
-  createClient(c: Partial<Client>): Observable<Client> {
-    return this.http.post<Client>(`${this.base}/api/master/clients`, c);
+  upsertClient(req: UpsertClientRequest): Observable<Client> {
+    return this.http.post<Client>(`${this.base}/api/master/clients`, req);
   }
   deleteClient(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/master/clients/${id}`);
@@ -73,6 +78,14 @@ export class ApiService {
     return this.http.post<SecondWeighmentResponse>(`${this.base}/api/tickets/second`, req, {
       params: { siteId }
     });
+  }
+
+  // ─── RS232 Settings ───────────────────────────────────────────────────────
+  getRs232Settings(siteId: number): Observable<Rs232Settings> {
+    return this.http.get<Rs232Settings>(`${this.base}/api/admin/rs232`, { params: { siteId } });
+  }
+  saveRs232Settings(s: Rs232Settings): Observable<void> {
+    return this.http.post<void>(`${this.base}/api/admin/rs232`, s);
   }
 
   // ─── Site Info ────────────────────────────────────────────────────────────
@@ -204,6 +217,32 @@ export class ApiService {
   }
   deleteVehicleType(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/admin/vehicletypes/${id}`);
+  }
+
+  // ─── Printer Settings ──────────────────────────────────────────────────────
+  getPrinterSettings(siteId: number): Observable<PrinterSettings> {
+    return this.http.get<PrinterSettings>(`${this.base}/api/admin/printersettings`, { params: { siteId } });
+  }
+  getPrintFormats(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.base}/api/admin/printersettings/formats`);
+  }
+  upsertPrinterSettings(req: UpsertPrinterSettingsRequest): Observable<void> {
+    return this.http.post<void>(`${this.base}/api/admin/printersettings`, req);
+  }
+  sendToPrinter(siteId: number, ticketId: string, format?: string): Observable<void> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (format) params = params.set('format', format);
+    return this.http.post<void>(`${this.base}/api/print/ticket/${encodeURIComponent(ticketId)}/send`, {}, { params });
+  }
+  printTicketByNumber(siteId: number, ticketNumber: string, format?: string): Observable<Blob> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (format) params = params.set('format', format);
+    return this.http.get(`${this.base}/api/print/ticket/by-number/${encodeURIComponent(ticketNumber)}`, { params, responseType: 'blob' });
+  }
+  sendToPrinterByNumber(siteId: number, ticketNumber: string, format?: string): Observable<void> {
+    let params = new HttpParams().set('siteId', siteId);
+    if (format) params = params.set('format', format);
+    return this.http.post<void>(`${this.base}/api/print/ticket/by-number/${encodeURIComponent(ticketNumber)}/send`, {}, { params });
   }
 
 }

@@ -76,6 +76,8 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
   result: SecondWeighmentResponse | null = null;
   showPrint = false;
   printCount = 0;
+  printing = false;
+  printError = '';
 
   liveWeight: WeightReadingDto | null = null;
   weightState: ConnectionState = 'disconnected';
@@ -113,7 +115,7 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
         if (key === 'Escape') this.router.navigate(['/dashboard']);
         if (key === 'F3') this.router.navigate(['/weighment/second']);
         if (key === 'F5') this.router.navigate(['/weighment/one-go']);
-        if (key === 'CtrlP' && this.result?.printAllowed) window.print();
+        if (key === 'CtrlP' && this.result?.printAllowed) this.doPrint();
       })
     );
     setTimeout(() => (document.getElementById('fld-ticketNumber') as HTMLElement)?.focus(), 100);
@@ -285,7 +287,18 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
       });
   }
 
-  doPrint(): void { this.printCount++; this.cdr.markForCheck(); window.print(); }
+  doPrint(): void {
+    if (this.printing || !this.result) return;
+    this.printing = true;
+    this.printError = '';
+    this.cdr.markForCheck();
+    this.api.sendToPrinterByNumber(this.siteId, this.result.ticketNumber)
+      .pipe(finalize(() => { this.printing = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => { this.printCount++; this.cdr.markForCheck(); },
+        error: e => { this.printError = e?.error?.message || 'Print failed.'; this.cdr.markForCheck(); }
+      });
+  }
 
   resetForm(): void {
     this.ticket = null;
@@ -302,6 +315,8 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
     this.result = null;
     this.showPrint = false;
     this.printCount = 0;
+    this.printing = false;
+    this.printError = '';
     this.cdr.markForCheck();
     setTimeout(() => (document.getElementById('fld-ticketNumber') as HTMLElement)?.focus(), 60);
   }

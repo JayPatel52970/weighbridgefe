@@ -114,7 +114,10 @@
             <div class="step-lbl">Charges (₹)</div>
             @if (isActive('charges')) {
               <input id="fld-charges" type="number" class="form-control mt-2" min="0"
-                [(ngModel)]="charges" (keydown.enter)="onChargesEnter()">
+                [(ngModel)]="charges"
+                (keydown.enter)="onChargesEnter()"
+                (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
+                (keydown.arrowup)="$event.preventDefault(); navigateUp()">
               <div class="step-hint"><kbd>Enter</kbd> to confirm</div>
             } @else {
               <div class="step-val">₹ {{ charges | number }}</div>
@@ -157,8 +160,11 @@
             <div class="step-lbl">Amount Paid (₹)</div>
             @if (isActive('paymentAmount')) {
               <input id="fld-paymentAmount" type="number" class="form-control mt-2" min="0"
-                [(ngModel)]="paymentAmount" (keydown.enter)="advance('paymentAmount')">
-              <div class="step-hint"><kbd>Enter</kbd> to confirm</div>
+                [(ngModel)]="paymentAmount"
+                (keydown.enter)="advance('paymentAmount')"
+                (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
+                (keydown.arrowup)="$event.preventDefault(); navigateUp()">
+              <div class="step-hint"><kbd>Enter</kbd> confirm · <kbd>↑↓</kbd> navigate</div>
             } @else {
               <div class="step-val">₹ {{ paymentAmount | number }}</div>
             }
@@ -375,12 +381,20 @@
       </div>
 
       <div class="po-foot">
-        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="newEntry()">
+        <button type="button" class="btn btn-outline-secondary btn-sm me-auto" (click)="newEntry()">
           <i class="bi bi-plus me-1"></i>New Entry
         </button>
-        <button id="print-btn" type="button" class="btn btn-primary btn-sm" (click)="doPrint()">
-          <i class="bi bi-printer me-1"></i>
-          {{ printCount === 0 ? 'Print Ticket' : 'Print Another Copy' }}
+        @if (printError) {
+          <span class="text-danger small align-self-center">
+            <i class="bi bi-exclamation-triangle me-1"></i>{{ printError }}
+          </span>
+        }
+        <button id="print-btn" type="button" class="btn btn-primary btn-sm" [disabled]="printing" (click)="doPrint()">
+          @if (printing) {
+            <span class="spinner-border spinner-border-sm me-1"></span>Printing…
+          } @else {
+            <i class="bi bi-printer me-1"></i>{{ printCount === 0 ? 'Print Ticket' : 'Print Another Copy' }}
+          }
         </button>
       </div>
 

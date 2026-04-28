@@ -1,0 +1,287 @@
+<div class="mb-3"><h1 class="h3"><i class="bi bi-printer me-2"></i>Printer Settings</h1></div>
+
+@if (loading) {
+  <div class="text-center p-4"><div class="spinner-border text-primary"></div></div>
+} @else {
+  <form (ngSubmit)="save()" #f="ngForm" autocomplete="off">
+    <div class="row g-3">
+
+      @if (error) {
+        <div class="col-12"><div class="alert alert-danger">{{ error }}</div></div>
+      }
+      @if (success) {
+        <div class="col-12">
+          <div class="alert alert-success alert-dismissible">
+            <i class="bi bi-check-circle me-2"></i>Settings saved.
+            <button type="button" class="btn-close" (click)="success = false"></button>
+          </div>
+        </div>
+      }
+
+      <!-- ── General ─────────────────────────────────────────────────── -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header fw-semibold">
+            <i class="bi bi-gear me-2"></i>General
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="enabled"
+                         [(ngModel)]="settings.enabled" name="enabled">
+                  <label class="form-check-label fw-semibold" for="enabled">Enable Printer</label>
+                </div>
+                <div class="form-text">When disabled, print requests are accepted but not forwarded to the printer.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Printer Type</label>
+                <select id="fld-printerType" class="form-select"
+                        [(ngModel)]="settings.printerType" name="printerType">
+                  @for (opt of printerTypeOptions; track opt.value) {
+                    <option [ngValue]="opt.value">{{ opt.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Connected OS Type</label>
+                <select class="form-select"
+                        [(ngModel)]="settings.connectedOsType" name="connectedOsType">
+                  @for (opt of osTypeOptions; track opt.value) {
+                    <option [ngValue]="opt.value">{{ opt.label }}</option>
+                  }
+                </select>
+                <div class="form-text">OS on the machine the printer is attached to.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">
+                  Printer Name <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" placeholder="e.g. TVS-EPSON"
+                       [(ngModel)]="settings.printerName" name="printerName">
+                <div class="form-text">
+                  System printer name as shown in OS print queue.
+                  Windows: <code>\\SERVER\PrinterName</code>  ·  Linux: <code>TVS-EPSON</code>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">
+                  Default Print Format <span class="text-danger">*</span>
+                </label>
+                <select class="form-select"
+                        [(ngModel)]="settings.defaultPrintFormat" name="defaultPrintFormat">
+                  <option value="">— Select format —</option>
+                  @for (fmt of formats; track fmt) {
+                    <option [value]="fmt">{{ fmt }}</option>
+                  }
+                </select>
+                @if (!formats.length) {
+                  <div class="form-text text-warning">
+                    <i class="bi bi-exclamation-triangle me-1"></i>No formats loaded from server.
+                  </div>
+                }
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Dot Matrix Settings ──────────────────────────────────────── -->
+      @if (settings.printerType === PrinterType.DotMatrix) {
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-receipt me-2"></i>Dot Matrix Settings
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+
+                <div class="col-md-3">
+                  <label class="form-label">Paper Width (chars)</label>
+                  <input type="number" class="form-control" min="1"
+                         [(ngModel)]="settings.paperWidth" name="paperWidth">
+                  <div class="form-text">Characters per line — e.g. <code>40</code> for 80 mm paper.</div>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">Lines Per Page</label>
+                  <input type="number" class="form-control" min="1"
+                         [(ngModel)]="settings.linesPerPage" name="linesPerPage">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">Top Margin (lines)</label>
+                  <input type="number" class="form-control" min="0"
+                         [(ngModel)]="settings.topMargin" name="topMargin">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">Bottom Margin (lines)</label>
+                  <input type="number" class="form-control" min="0"
+                         [(ngModel)]="settings.bottomMargin" name="bottomMargin">
+                </div>
+
+                <div class="col-md-3">
+                  <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" id="isCondensed"
+                           [(ngModel)]="settings.isCondensed" name="isCondensed">
+                    <label class="form-check-label" for="isCondensed">Condensed Print</label>
+                  </div>
+                  <div class="form-text">Sends ESC SI command to compress character width.</div>
+                </div>
+
+                <div class="col-md-3">
+                  <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" id="isDoubleWidth"
+                           [(ngModel)]="settings.isDoubleWidth" name="isDoubleWidth">
+                    <label class="form-check-label" for="isDoubleWidth">Double Width</label>
+                  </div>
+                  <div class="form-text">Expands header / total lines to double width.</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ── Laser Settings ───────────────────────────────────────────── -->
+      @if (settings.printerType === PrinterType.Laser) {
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-file-earmark me-2"></i>Laser / Inkjet Settings
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+
+                <div class="col-md-4">
+                  <label class="form-label">Paper Size <span class="text-danger">*</span></label>
+                  <select class="form-select"
+                          [(ngModel)]="settings.paperSize" name="paperSize">
+                    @for (s of paperSizeOptions; track s) {
+                      <option [value]="s">{{ s }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Orientation</label>
+                  <select class="form-select"
+                          [(ngModel)]="settings.orientation" name="orientation">
+                    @for (opt of orientationOptions; track opt.value) {
+                      <option [ngValue]="opt.value">{{ opt.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Margin (mm)</label>
+                  <input type="number" class="form-control" min="0"
+                         [(ngModel)]="settings.margin" name="margin">
+                  <div class="form-text">Page margin applied on all sides.</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ── Actions ─────────────────────────────────────────────────── -->
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary btn-lg me-2" [disabled]="saving">
+          @if (saving) {
+            <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+          } @else {
+            <i class="bi bi-save me-1"></i>Save Settings
+          }
+        </button>
+        <button type="button" class="btn btn-secondary me-2" (click)="reload()" [disabled]="loading || saving">
+          <i class="bi bi-arrow-clockwise me-1"></i>Reload
+        </button>
+        <button type="button" class="btn btn-outline-info" (click)="openTestPrint()">
+          <i class="bi bi-printer me-1"></i>Test Print
+        </button>
+        <span class="text-muted small ms-3">
+          <i class="bi bi-info-circle me-1"></i>Server restart is not required — changes take effect on the next print request.
+        </span>
+      </div>
+
+    </div>
+  </form>
+}
+
+<!-- ═══ Test Print Modal ═════════════════════════════════════════════════════ -->
+@if (showTestPrint) {
+  <div class="tp-back" (click)="closeTestPrint()">
+    <div class="tp-card" (click)="$event.stopPropagation()">
+
+      <div class="tp-head">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-printer-fill fs-5"></i>
+          <div class="fw-bold">Test Print</div>
+          <button type="button" class="btn-close btn-close-white ms-auto" (click)="closeTestPrint()"></button>
+        </div>
+      </div>
+
+      <div class="tp-body">
+        @if (testSuccess) {
+          <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>Print job sent to printer successfully.
+          </div>
+        }
+        @if (testError) {
+          <div class="alert alert-danger">{{ testError }}</div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            Ticket Number <span class="text-danger">*</span>
+          </label>
+          <input id="test-ticket-id" type="text" class="form-control"
+                 placeholder="e.g. WB-0042"
+                 [(ngModel)]="testTicketId"
+                 (keydown.enter)="sendTestPrint()"
+                 (keydown.escape)="closeTestPrint()">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">
+            Format Override <span class="text-muted fw-normal">(optional)</span>
+          </label>
+          <select class="form-select" [(ngModel)]="testFormat"
+                  (keydown.escape)="closeTestPrint()">
+            <option value="">Use default ({{ settings.defaultPrintFormat || 'none set' }})</option>
+            @for (fmt of formats; track fmt) {
+              <option [value]="fmt">{{ fmt }}</option>
+            }
+          </select>
+          <div class="form-text">Leave blank to use the configured default format.</div>
+        </div>
+      </div>
+
+      <div class="tp-foot">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="closeTestPrint()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary btn-sm"
+                (click)="sendTestPrint()"
+                [disabled]="testPrinting || !testTicketId.trim()">
+          @if (testPrinting) {
+            <span class="spinner-border spinner-border-sm me-1"></span>Sending...
+          } @else {
+            <i class="bi bi-printer me-1"></i>Send to Printer
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

@@ -73,6 +73,7 @@ export class OneGoComponent implements OnInit, OnDestroy {
   materialHighlight = -1;
   selectedMaterial: Material | null = null;
 
+  allClients: Client[] = [];
   clientSearch = '';
   clientSuggestions: Client[] = [];
   clientHighlight = -1;
@@ -92,11 +93,12 @@ export class OneGoComponent implements OnInit, OnDestroy {
   result: CreateOneGoWeighmentResult | null = null;
   showPrint = false;
   printCount = 0;
+  printing = false;
+  printError = '';
 
   PaymentMode = PaymentMode;
 
   private vehicleSearch$ = new Subject<string>();
-  private clientSearch$ = new Subject<string>();
   private materialSearch$ = new Subject<string>();
   private subs = new Subscription();
 
@@ -113,6 +115,7 @@ export class OneGoComponent implements OnInit, OnDestroy {
   isDone(s: Step): boolean { return this.currentStepIndex > this.steps.indexOf(s); }
 
   ngOnInit(): void {
+    this.api.listClients(0, 2000).subscribe({ next: r => { this.allClients = r; this.cdr.markForCheck(); } });
     this.subs.add(
       this.realtimeWeight.weight$.subscribe(w => {
         this.liveWeight = w;
@@ -129,11 +132,6 @@ export class OneGoComponent implements OnInit, OnDestroy {
       ).subscribe(r => { this.vehicleSuggestions = r; this.cdr.markForCheck(); })
     );
     this.subs.add(
-      this.clientSearch$.pipe(debounceTime(250), distinctUntilChanged(),
-        switchMap(q => this.api.searchClients(q))
-      ).subscribe(r => { this.clientSuggestions = r; this.cdr.markForCheck(); })
-    );
-    this.subs.add(
       this.materialSearch$.pipe(debounceTime(250), distinctUntilChanged(),
         switchMap(q => this.api.searchMaterials(q))
       ).subscribe(r => { this.materialSuggestions = r; this.cdr.markForCheck(); })
@@ -147,7 +145,7 @@ export class OneGoComponent implements OnInit, OnDestroy {
         if (key === 'F1') this.router.navigate(['/weighment/first']);
         if (key === 'F2') this.router.navigate(['/weighment/second-direct']);
         if (key === 'F3') this.router.navigate(['/weighment/second']);
-        if (key === 'CtrlP' && this.result?.printAllowed) window.print();
+        if (key === 'CtrlP' && this.result?.printAllowed) this.doPrint();
       })
     );
     setTimeout(() => this.focusStep('vehicle'), 100);
@@ -340,8 +338,13 @@ export class OneGoComponent implements OnInit, OnDestroy {
     this.clientSearch = val;
     this.clientHighlight = -1;
     this.selectedClient = null;
-    if (val.length >= 2) this.clientSearch$.next(val);
-    else this.clientSuggestions = [];
+    const q = val.trim().toLowerCase();
+    this.clientSuggestions = q.length >= 1
+      ? this.allClients.filter(c =>
+          c.name.toLowerCase().includes(q) ||
+          (c.phoneNumber ?? '').toLowerCase().includes(q)).slice(0, 10)
+      : [];
+    this.cdr.markForCheck();
   }
 
   selectClient(c: Client): void {
@@ -402,7 +405,18 @@ export class OneGoComponent implements OnInit, OnDestroy {
       });
   }
 
-  doPrint(): void { this.printCount++; this.cdr.markForCheck(); window.print(); }
+  doPrint(): void {
+    if (this.printing || !this.result) return;
+    this.printing = true;
+    this.printError = '';
+    this.cdr.markForCheck();
+    this.api.sendToPrinterByNumber(this.siteId, this.result.ticketNumber)
+      .pipe(finalize(() => { this.printing = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => { this.printCount++; this.cdr.markForCheck(); },
+        error: e => { this.printError = e?.error?.message || 'Print failed.'; this.cdr.markForCheck(); }
+      });
+  }
 
   newEntry(): void {
     this.currentStepIndex = 0;
@@ -414,7 +428,7 @@ export class OneGoComponent implements OnInit, OnDestroy {
     this.clientSearch = ''; this.clientSuggestions = []; this.selectedClient = null;
     this.driverName = '';
     this.saving = false; this.error = ''; this.result = null;
-    this.showPrint = false; this.printCount = 0;
+    this.showPrint = false; this.printCount = 0; this.printing = false; this.printError = '';
     this.cdr.markForCheck();
     this.focusStep('vehicle');
   }

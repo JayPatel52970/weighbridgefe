@@ -76,6 +76,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
   materialHighlight = -1;
   selectedMaterial: Material | null = null;
 
+  allClients: Client[] = [];
   clientSearch = '';
   clientSuggestions: Client[] = [];
   clientHighlight = -1;
@@ -93,12 +94,13 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
   result: FirstWeighmentResponse | null = null;
   showPrint = false;
   printCount = 0;
+  printing = false;
+  printError = '';
 
   FirstWeighType = FirstWeighType;
   PaymentMode = PaymentMode;
 
   private vehicleSearch$ = new Subject<string>();
-  private clientSearch$ = new Subject<string>();
   private materialSearch$ = new Subject<string>();
   private subs = new Subscription();
 
@@ -115,7 +117,12 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
   isDone(s: Step): boolean { return this.currentStepIndex > this.steps.indexOf(s); }
 
   ngOnInit(): void {
-    this.api.getVehicleTypes(this.siteId).subscribe({ next: r => { this.vehicleTypes = r; this.cdr.markForCheck(); } });
+    this.api.getVehicleTypes(this.siteId).subscribe({ next: r => {
+      this.vehicleTypes = r;
+      if (!this.selectedVehicleTypeId && r.length) this.selectedVehicleTypeId = r[0].id;
+      this.cdr.markForCheck();
+    } });
+    this.api.listClients(0, 2000).subscribe({ next: r => { this.allClients = r; this.cdr.markForCheck(); } });
     this.subs.add(
       this.realtimeWeight.weight$.subscribe(w => { this.liveWeight = w; this.cdr.markForCheck(); })
     );
@@ -126,11 +133,6 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       this.vehicleSearch$.pipe(debounceTime(250), distinctUntilChanged(),
         switchMap(q => this.api.searchVehicles(q))
       ).subscribe(r => { this.vehicleSuggestions = r; this.cdr.markForCheck(); })
-    );
-    this.subs.add(
-      this.clientSearch$.pipe(debounceTime(250), distinctUntilChanged(),
-        switchMap(q => this.api.searchClients(q))
-      ).subscribe(r => { this.clientSuggestions = r; this.cdr.markForCheck(); })
     );
     this.subs.add(
       this.materialSearch$.pipe(debounceTime(250), distinctUntilChanged(),
@@ -258,7 +260,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.vehicleSearch = v.licensePlate;
     this.vehicleSuggestions = [];
     this.vehicleHighlight = -1;
-    this.selectedVehicleTypeId = v.vehicleTypeId;
+    if (v.vehicleTypeId) this.selectedVehicleTypeId = v.vehicleTypeId;
     if (v.defaultCharge != null) { this.charges = v.defaultCharge; this.paymentAmount = v.defaultCharge; }
     this.advance('vehicle');
   }
@@ -274,9 +276,15 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
 
   // ─── Vehicle type ─────────────────────────────────────────────────────────────
 
+  private confirmVehicleType(): void {
+    const vt = this.vehicleTypes.find(t => t.id === this.selectedVehicleTypeId);
+    if (vt) { this.charges = vt.price; this.paymentAmount = vt.price; }
+    this.advance('vehicleType');
+  }
+
   setVehicleType(id: string): void {
     this.selectedVehicleTypeId = id;
-    this.advance('vehicleType');
+    this.confirmVehicleType();
   }
 
   onVehicleTypeKey(e: KeyboardEvent): void {
@@ -290,7 +298,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       this.selectedVehicleTypeId = this.vehicleTypes[(idx - 1 + this.vehicleTypes.length) % this.vehicleTypes.length]?.id ?? null;
       this.cdr.markForCheck();
     } else if (e.key === 'Enter') {
-      this.advance('vehicleType');
+      this.confirmVehicleType();
     } else if (e.key === 'ArrowDown') { e.preventDefault(); this.navigateDown(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); this.navigateUp(); }
   }
@@ -359,8 +367,13 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.clientSearch = val;
     this.clientHighlight = -1;
     this.selectedClient = null;
-    if (val.length >= 2) this.clientSearch$.next(val);
-    else this.clientSuggestions = [];
+    const q = val.trim().toLowerCase();
+    this.clientSuggestions = q.length >= 1
+      ? this.allClients.filter(c =>
+          c.name.toLowerCase().includes(q) ||
+          (c.phoneNumber ?? '').toLowerCase().includes(q)).slice(0, 10)
+      : [];
+    this.cdr.markForCheck();
   }
 
   selectClient(c: Client): void {
@@ -421,9 +434,16 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
   }
 
   doPrint(): void {
-    this.printCount++;
+    if (this.printing || !this.result) return;
+    this.printing = true;
+    this.printError = '';
     this.cdr.markForCheck();
-    window.print();
+    this.api.sendToPrinterByNumber(this.siteId, this.result.ticketNumber)
+      .pipe(finalize(() => { this.printing = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => { this.printCount++; this.cdr.markForCheck(); },
+        error: e => { this.printError = e?.error?.message || 'Print failed.'; this.cdr.markForCheck(); }
+      });
   }
 
   newEntry(): void {
@@ -431,13 +451,13 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.fieldErrors = {};
     this.firstWeighType = FirstWeighType.Gross;
     this.vehicleSearch = ''; this.vehicleSuggestions = []; this.selectedVehicle = null;
-    this.selectedVehicleTypeId = null;
+    this.selectedVehicleTypeId = this.vehicleTypes[0]?.id ?? null;
     this.charges = 0; this.paymentMode = PaymentMode.Cash; this.paymentAmount = 0;
     this.materialSearch = ''; this.materialSuggestions = []; this.selectedMaterial = null;
     this.clientSearch = ''; this.clientSuggestions = []; this.selectedClient = null;
     this.driverName = '';
     this.saving = false; this.error = ''; this.result = null;
-    this.showPrint = false; this.printCount = 0;
+    this.showPrint = false; this.printCount = 0; this.printing = false; this.printError = '';
     this.cdr.markForCheck();
     this.focusStep('weighType');
   }

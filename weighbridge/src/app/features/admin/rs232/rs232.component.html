@@ -1,0 +1,196 @@
+<div class="mb-3"><h1 class="h3"><i class="bi bi-usb-symbol me-2"></i>Weight Scale (RS232)</h1></div>
+
+@if (loading) {
+  <div class="text-center p-4"><div class="spinner-border text-primary"></div></div>
+} @else {
+  <form (ngSubmit)="save()" #f="ngForm">
+    <div class="row g-3">
+
+      <!-- ── Enable / Status ─────────────────────────────────────── -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="enabled"
+                     [(ngModel)]="settings.enabled" name="enabled">
+              <label class="form-check-label fw-semibold" for="enabled">
+                Enable RS232 scale reader
+              </label>
+            </div>
+            <div class="form-text mt-1">
+              When disabled the server will not attempt to open the serial port. Changes take effect after server restart.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Port ───────────────────────────────────────────────── -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header fw-semibold">
+            <i class="bi bi-plug me-2"></i>Port
+          </div>
+          <div class="card-body">
+            @if (error) { <div class="alert alert-danger">{{ error }}</div> }
+            @if (success) {
+              <div class="alert alert-success alert-dismissible">
+                <i class="bi bi-check-circle me-2"></i>Settings saved.
+                <button type="button" class="btn-close" (click)="success = false"></button>
+              </div>
+            }
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Port Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" placeholder="COM3 or /dev/ttyUSB0"
+                       [(ngModel)]="settings.portName" name="portName" required>
+                <div class="form-text">
+                  Windows: <code>COM3</code>, <code>USB003</code> &nbsp;·&nbsp;
+                  Linux/Pi: <code>/dev/ttyUSB0</code>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Baud Rate</label>
+                <select class="form-select" [(ngModel)]="settings.baudRate" name="baudRate">
+                  @for (b of baudRates; track b) {
+                    <option [value]="b">{{ b }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Read Timeout (ms)</label>
+                <input type="number" class="form-control" min="100" max="30000"
+                       [(ngModel)]="settings.readTimeoutMs" name="readTimeoutMs">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Frame format ───────────────────────────────────────── -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header fw-semibold">
+            <i class="bi bi-diagram-3 me-2"></i>Frame Format
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="col-md-3">
+                <label class="form-label">Data Bits</label>
+                <select class="form-select" [(ngModel)]="settings.dataBits" name="dataBits">
+                  @for (d of dataBitsOptions; track d) {
+                    <option [value]="d">{{ d }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Parity</label>
+                <select class="form-select" [(ngModel)]="settings.parity" name="parity">
+                  @for (p of parityOptions; track p.value) {
+                    <option [value]="p.value">{{ p.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Stop Bits</label>
+                <select class="form-select" [(ngModel)]="settings.stopBits" name="stopBits">
+                  @for (s of stopBitsOptions; track s.value) {
+                    <option [value]="s.value">{{ s.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Handshake</label>
+                <select class="form-select" [(ngModel)]="settings.handshake" name="handshake">
+                  @for (h of handshakeOptions; track h.value) {
+                    <option [value]="h.value">{{ h.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">New Line Sequence</label>
+                <input type="text" class="form-control font-monospace"
+                       [(ngModel)]="settings.newLine" name="newLine"
+                       placeholder="\r\n">
+                <div class="form-text">Use <code>\r\n</code> for CR+LF, <code>\n</code> for LF, <code>\r</code> for CR.</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Parsing ─────────────────────────────────────────────── -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header fw-semibold">
+            <i class="bi bi-braces me-2"></i>Parsing
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="col-md-6">
+                <label class="form-label">
+                  Weight Regex <span class="text-danger">*</span>
+                  <span class="badge bg-light text-dark ms-1">capture group 1 = weight value</span>
+                </label>
+                <input type="text" class="form-control font-monospace"
+                       [(ngModel)]="settings.weightRegex" name="weightRegex"
+                       placeholder="(-?\d+(?:\.\d+)?)" required>
+                <div class="form-text">The first capture group must match the numeric weight value.</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">
+                  Stable Regex
+                  <span class="text-muted fw-normal">(optional)</span>
+                  <span class="badge bg-light text-dark ms-1">match = reading is stable</span>
+                </label>
+                <input type="text" class="form-control font-monospace"
+                       [ngModel]="settings.stableRegex ?? ''"
+                       (ngModelChange)="settings.stableRegex = $event || null"
+                       name="stableRegex"
+                       placeholder="ST or leave blank">
+                <div class="form-text">If the line matches this pattern the weight is marked stable. Leave blank to always mark stable.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Unit Multiplier to kg</label>
+                <input type="number" class="form-control" step="any" min="0"
+                       [(ngModel)]="settings.unitMultiplierToKg" name="unitMultiplierToKg">
+                <div class="form-text">
+                  <code>1</code> = scale sends kg &nbsp;·&nbsp;
+                  <code>0.001</code> = scale sends grams &nbsp;·&nbsp;
+                  <code>1000</code> = scale sends tonnes
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Save ────────────────────────────────────────────────── -->
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary btn-lg" [disabled]="saving">
+          @if (saving) {
+            <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+          } @else {
+            <i class="bi bi-save me-1"></i>Save Settings
+          }
+        </button>
+        <span class="text-muted small ms-3">
+          <i class="bi bi-info-circle me-1"></i>Server restart may be required for port changes to take effect.
+        </span>
+      </div>
+
+    </div>
+  </form>
+}

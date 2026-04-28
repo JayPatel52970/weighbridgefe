@@ -73,6 +73,8 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
   result: SecondWeighmentResponse | null = null;
   showPrint = false;
   printCount = 0;
+  printing = false;
+  printError = '';
 
   liveWeight: WeightReadingDto | null = null;
   weightState: ConnectionState = 'disconnected';
@@ -111,7 +113,7 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
     this.subs.add(
       this.kb.shortcuts$.subscribe(key => {
         if (key === 'Escape') this.router.navigate(['/weighment/second']);
-        if (key === 'CtrlP' && this.result?.printAllowed) window.print();
+        if (key === 'CtrlP' && this.result?.printAllowed) this.doPrint();
       })
     );
   }
@@ -244,12 +246,17 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
   }
 
   doPrint(): void {
-    this.printCount++;
+    if (this.printing || !this.result) return;
+    this.printing = true;
+    this.printError = '';
     this.cdr.markForCheck();
-    window.print();
+    this.api.sendToPrinterByNumber(this.siteId, this.result.ticketNumber)
+      .pipe(finalize(() => { this.printing = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => { this.printCount++; this.cdr.markForCheck(); },
+        error: e => { this.printError = e?.error?.message || 'Print failed.'; this.cdr.markForCheck(); }
+      });
   }
-
-  print(): void { window.print(); }
 
   private loadTicket(): void {
     this.loading = true;
