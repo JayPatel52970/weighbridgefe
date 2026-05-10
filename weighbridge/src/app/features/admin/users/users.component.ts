@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminUser } from '../../../core/models';
+import { LangService } from '../../../core/services/lang.service';
 
 @Component({
   selector: 'app-users',
@@ -15,10 +16,11 @@ export class UsersComponent implements OnInit {
   newUsername = '';
   newPassword = '';
   newRoles: string[] = ['User'];
+  newLanguage = 'en';
   saving = false;
   error = '';
 
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef, public lang: LangService) {}
 
   ngOnInit(): void { this.load(); }
 
@@ -37,6 +39,10 @@ export class UsersComponent implements OnInit {
 
   hasRole(role: string): boolean { return this.newRoles.includes(role); }
 
+  langLabel(code?: string): string {
+    return this.lang.langs.find(l => l.code === (code ?? 'en'))?.label ?? 'EN';
+  }
+
   save(): void {
     if (!this.newUsername.trim() || !this.newPassword.trim()) {
       this.error = 'Username and password are required.';
@@ -46,7 +52,7 @@ export class UsersComponent implements OnInit {
     this.error = '';
     this.saving = true;
     this.cdr.markForCheck();
-    this.api.createUser({ username: this.newUsername, password: this.newPassword, roles: [...this.newRoles] })
+    this.api.createUser({ username: this.newUsername, password: this.newPassword, roles: [...this.newRoles], language: this.newLanguage })
       .pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: () => {
@@ -54,6 +60,7 @@ export class UsersComponent implements OnInit {
           this.newUsername = '';
           this.newPassword = '';
           this.newRoles = ['User'];
+          this.newLanguage = 'en';
           this.load();
         },
         error: err => { this.error = err?.error?.message || 'Save failed.'; this.cdr.markForCheck(); }

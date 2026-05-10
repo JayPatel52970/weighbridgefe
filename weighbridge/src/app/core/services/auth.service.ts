@@ -49,7 +49,8 @@ export class AuthService {
       accessToken: res.accessToken,
       roles: res.roles,
       lastLoginAt: new Date().toISOString(),
-      exp: decodeExp(res.accessToken)
+      exp: decodeExp(res.accessToken),
+      language: res.language
     };
     const profiles = this.getProfiles();
     const idx = profiles.findIndex(p => p.username === profile.username);

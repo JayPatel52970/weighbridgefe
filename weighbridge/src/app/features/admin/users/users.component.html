@@ -19,7 +19,15 @@
           <label class="form-label">Password <span class="text-danger">*</span></label>
           <input type="password" class="form-control" [(ngModel)]="newPassword" placeholder="Enter password">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+          <label class="form-label">Language</label>
+          <select class="form-select" [(ngModel)]="newLanguage">
+            @for (l of lang.langs; track l.code) {
+              <option [value]="l.code">{{ l.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-2">
           <label class="form-label">Roles</label>
           <div>
             <div class="form-check form-check-inline">
@@ -34,7 +42,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <div class="d-flex gap-2">
             <button class="btn btn-success" (click)="save()" [disabled]="saving">
               <i class="bi bi-save me-1"></i>Save
@@ -52,7 +60,7 @@
     } @else {
       <table class="table table-hover mb-0">
         <thead class="table-light">
-          <tr><th>Username</th><th>Roles</th><th>Status</th><th></th></tr>
+          <tr><th>Username</th><th>Roles</th><th>Language</th><th>Status</th><th></th></tr>
         </thead>
         <tbody>
           @for (u of users; track u.id) {
@@ -62,6 +70,9 @@
                 @for (r of u.roles; track r) {
                   <span class="badge bg-primary me-1">{{ r }}</span>
                 }
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ langLabel(u.language) }}</span>
               </td>
               <td>
                 <span class="badge" [class.bg-success]="!u.isDisabled" [class.bg-danger]="u.isDisabled">

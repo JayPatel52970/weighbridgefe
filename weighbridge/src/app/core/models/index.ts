@@ -68,6 +68,7 @@ export interface LoginResponse {
   accessToken: string;
   username: string;
   roles: string[];
+  language?: string;
 }
 
 export interface SavedProfile {
@@ -76,6 +77,7 @@ export interface SavedProfile {
   roles: string[];
   lastLoginAt: string;
   exp?: number;
+  language?: string;
 }
 
 // ─── Master ───────────────────────────────────────────────────────────────────
@@ -248,12 +250,14 @@ export interface AdminUser {
   username: string;
   roles: string[];
   isDisabled: boolean;
+  language?: string;
 }
 
 export interface CreateUserRequest {
   username: string;
   password: string;
   roles: string[];
+  language?: string;
 }
 
 // ─── Reports ──────────────────────────────────────────────────────────────────
@@ -452,6 +456,6 @@ export interface WeightReadingDto {
   weightKg: number;
   raw: string;
   isStable: boolean;
+  timestampUtc: string;
   mode?: string;
-  timestamp?: string;
 }
