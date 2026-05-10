@@ -8,6 +8,20 @@
       </li>
     </ul>
 
+    <ul class="navbar-nav me-3">
+      <li class="nav-item">
+        <span class="nav-link d-flex align-items-center gap-2 font-monospace">
+          <span class="wt-dot"
+                [class.wt-on]="weightState === 'connected'"
+                [class.wt-warn]="weightState === 'reconnecting'"></span>
+          <span class="fw-bold" style="letter-spacing:.03em;min-width:70px;text-align:right">
+            {{ liveWeight?.weightKg ?? 0 | number:'1.0-0' }}
+          </span>
+          <span class="text-muted" style="font-size:.72rem">kg</span>
+        </span>
+      </li>
+    </ul>
+
     <ul class="navbar-nav ms-auto">
       @if (profile; as p) {
         <li class="nav-item">

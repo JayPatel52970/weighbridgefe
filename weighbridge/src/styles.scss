@@ -58,16 +58,98 @@ tr:focus {
 .wb-scale-val { font-family:'Courier New',monospace; font-size:1.5rem; font-weight:900; color:#00e676; letter-spacing:3px; text-shadow:0 0 10px rgba(0,230,118,.45); min-width:5ch; text-align:right; }
 .wb-scale-unit { font-family:'Courier New',monospace; font-size:.8rem; color:#00e676; opacity:.45; }
 
+/* ─── Weighment popup window ────────────────────────────────────────────────── */
+.wm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .55);
+  z-index: 1040;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.wm-window {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 80vw !important;
+  height: 90vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  border-radius: 12px !important;
+  z-index: 1045 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #fff !important;
+  box-shadow: 0 32px 100px rgba(0, 0, 0, .5) !important;
+  animation: wmPop .18s ease;
+}
+
+@keyframes wmPop {
+  from { transform: translate(-50%, -50%) scale(.96); opacity: 0; }
+  to   { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+}
+
+.wm-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 20px;
+  background: linear-gradient(135deg, #111827 0%, #1e3a5f 100%);
+  color: #fff;
+  flex-shrink: 0;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.wm-title {
+  font-size: .92rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.wm-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, .7);
+  font-size: .95rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 5px;
+  line-height: 1;
+  transition: background .15s, color .15s;
+}
+.wm-close-btn:hover { background: rgba(255, 255, 255, .15); color: #fff; }
+
+/* content padding and sticky weight panel inside the scrolling modal window */
+.wm-window .app-content { padding-top: 20px !important; }
+.wm-window .wp { top: 48px; }
+
+/* ─── Step next button (all weighment pages) ───────────────────────────────── */
+.step-next-btn { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:6px; border:none; background:#0d6efd; color:#fff; cursor:pointer; flex-shrink:0; align-self:center; transition:background .15s; }
+.step-next-btn:hover { background:#0b5ed7; }
+
 @media print {
   .app-sidebar,
   .app-header,
   .app-footer,
   .no-print,
   .wp,
-  .wb-scale {
+  .wb-scale,
+  .wm-backdrop,
+  .wm-titlebar {
     display: none !important;
   }
   .app-main {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
     margin-left: 0 !important;
   }
 }

@@ -41,15 +41,25 @@
               <div class="step-lbl">Second Weight (kg) <span class="text-danger">*</span></div>
               @if (isActive('secondWeight')) {
                 <input id="fld2-secondWeight" type="number" class="form-control mt-2" min="1"
-                  placeholder="Live scale auto-fills · or type manually"
+                  [placeholder]="manualMode ? 'Enter weight manually (kg)' : 'Live scale auto-fills · or type manually'"
                   [(ngModel)]="secondWeight"
                   (keydown)="onSecondWeightKey($event)">
-                <div class="step-hint"><kbd>Enter</kbd> confirm · <kbd>L</kbd> re-capture live · <kbd>↑↓</kbd> navigate</div>
+                <div class="step-hint">
+                  @if (manualMode) {
+                    <span class="badge bg-warning text-dark me-1" style="font-size:.58rem;vertical-align:middle">MANUAL</span>
+                    <kbd>Alt+M</kbd> switch to live · <kbd>Enter</kbd> confirm
+                  } @else {
+                    <kbd>Enter</kbd> confirm · <kbd>L</kbd> re-capture live · <kbd>↑↓</kbd> navigate · <kbd>Alt+M</kbd> manual entry
+                  }
+                </div>
                 @if (fieldErrors['secondWeight']) { <div class="step-err">{{ fieldErrors['secondWeight'] }}</div> }
               } @else {
                 <div class="step-val">{{ secondWeight | number }} kg</div>
               }
             </div>
+            @if (isActive('secondWeight')) {
+              <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('secondWeight')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+            }
           </div>
           <hr class="m-0">
 
@@ -70,6 +80,9 @@
                 <div class="step-val">₹ {{ totalCharges | number }}</div>
               }
             </div>
+            @if (isActive('charges')) {
+              <button type="button" class="step-next-btn" tabindex="-1" (click)="onChargesEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+            }
           </div>
           <hr class="m-0">
 
@@ -96,6 +109,9 @@
                 <div class="step-val">{{ payModeName(paymentMode) }}</div>
               }
             </div>
+            @if (isActive('paymentMode')) {
+              <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('paymentMode')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+            }
           </div>
           <hr class="m-0">
 
@@ -116,6 +132,9 @@
                 <div class="step-val">₹ {{ amountPaid | number }}</div>
               }
             </div>
+            @if (isActive('paymentAmount')) {
+              <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('paymentAmount')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+            }
           </div>
           <hr class="m-0">
 

@@ -1,0 +1,222 @@
+<div class="mb-3 d-flex align-items-center justify-content-between no-print">
+  <h1 class="h4 mb-0"><i class="bi bi-printer me-2 text-success"></i>Print Duplicate <span class="badge bg-warning text-dark ms-1">F4</span></h1>
+  <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F1</kbd> First &nbsp;<kbd>F2</kbd> Direct &nbsp;<kbd>F3</kbd> Ticket List &nbsp;<kbd>Ctrl+P</kbd> Print</small>
+</div>
+
+<div class="row g-3 align-items-start">
+
+  <!-- ═══ LEFT: Step form ══════════════════════════════════════════════════ -->
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+
+        <!-- 1 · Ticket Number -->
+        <div class="step-row" [class.active]="isActive('ticketNumber')" [class.done]="isDone('ticketNumber')"
+             (click)="isDone('ticketNumber') && goBack(0)">
+          <div class="step-num">{{ isDone('ticketNumber') ? '✓' : '1' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Ticket Number <span class="text-danger">*</span></div>
+            @if (isActive('ticketNumber')) {
+              <div class="d-flex gap-2 mt-2">
+                <input id="fld-pd-ticketNumber" type="text" class="form-control text-uppercase"
+                  placeholder="e.g. WB-0042"
+                  [(ngModel)]="ticketSearch"
+                  (keydown)="onTicketNumberKey($event)"
+                  [disabled]="lookingUp"
+                  autocomplete="off">
+                <button type="button" class="btn btn-success px-3" (click)="lookupTicket()" [disabled]="lookingUp || !ticketSearch.trim()">
+                  @if (lookingUp) {
+                    <span class="spinner-border spinner-border-sm"></span>
+                  } @else {
+                    <i class="bi bi-search"></i>
+                  }
+                </button>
+              </div>
+              <div class="step-hint"><kbd>Enter</kbd> look up ticket</div>
+              @if (lookupError) { <div class="step-err">{{ lookupError }}</div> }
+            } @else {
+              <div class="step-val">
+                {{ ticket?.ticketNumber }}
+                <span class="badge bg-secondary ms-1">{{ ticket?.vehicleLicensePlate }}</span>
+                @if (ticket) {
+                  <span class="badge {{ statusBadge(ticket.status) }} ms-1">{{ statusLabel(ticket.status) }}</span>
+                }
+              </div>
+            }
+          </div>
+          @if (isActive('ticketNumber')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="lookupTicket()" title="Look up ticket"><i class="bi bi-chevron-right"></i></button>
+          }
+        </div>
+        <hr class="m-0">
+
+        <!-- 2 · Print -->
+        <div class="step-row" [class.active]="isActive('print')">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-lbl">Ticket Details &amp; Print</div>
+            @if (isActive('print') && ticket) {
+
+              <!-- Ticket details grid -->
+              <div class="ti-grid">
+
+                <div class="ti-row">
+                  <div class="ti-lbl">Ticket #</div>
+                  <div class="ti-val">{{ ticket.ticketNumber }}</div>
+                </div>
+                <div class="ti-row">
+                  <div class="ti-lbl">Serial #</div>
+                  <div class="ti-val">#{{ ticket.serialNumber }}</div>
+                </div>
+
+                <div class="ti-row">
+                  <div class="ti-lbl">Vehicle</div>
+                  <div class="ti-val">{{ ticket.vehicleLicensePlate }}
+                    @if (ticket.vehicleTypeDisplayName) {
+                      <span class="badge bg-light text-dark ms-1" style="font-size:.62rem">{{ ticket.vehicleTypeDisplayName }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="ti-row">
+                  <div class="ti-lbl">Status</div>
+                  <div class="ti-val"><span class="badge {{ statusBadge(ticket.status) }}">{{ statusLabel(ticket.status) }}</span></div>
+                </div>
+
+                @if (ticket.clientName) {
+                  <div class="ti-row">
+                    <div class="ti-lbl">Client</div>
+                    <div class="ti-val">{{ ticket.clientName }}</div>
+                  </div>
+                }
+                @if (ticket.materialName) {
+                  <div class="ti-row">
+                    <div class="ti-lbl">Material</div>
+                    <div class="ti-val">{{ ticket.materialName }}</div>
+                  </div>
+                }
+                @if (ticket.driverName) {
+                  <div class="ti-row">
+                    <div class="ti-lbl">Driver</div>
+                    <div class="ti-val">{{ ticket.driverName }}</div>
+                  </div>
+                }
+
+                <div class="ti-divider"></div>
+
+                <div class="ti-row">
+                  <div class="ti-lbl">1st Weight <span class="text-muted">({{ weighTypeName(ticket.firstWeighType) }})</span></div>
+                  <div class="ti-val text-success fw-bold">{{ ticket.firstWeight | number:'1.0-0' }} kg</div>
+                </div>
+                @if (ticket.secondWeight != null) {
+                  <div class="ti-row">
+                    <div class="ti-lbl">2nd Weight</div>
+                    <div class="ti-val text-success fw-bold">{{ ticket.secondWeight | number:'1.0-0' }} kg</div>
+                  </div>
+                }
+                @if (ticket.netWeight != null) {
+                  <div class="ti-row">
+                    <div class="ti-lbl">Net Weight</div>
+                    <div class="ti-val fw-bold text-primary">{{ ticket.netWeight | number:'1.0-0' }} kg</div>
+                  </div>
+                }
+                @if (ticket.grossWeight != null) {
+                  <div class="ti-row">
+                    <div class="ti-lbl">Gross Weight</div>
+                    <div class="ti-val">{{ ticket.grossWeight | number:'1.0-0' }} kg</div>
+                  </div>
+                }
+
+                <div class="ti-divider"></div>
+
+                <div class="ti-row">
+                  <div class="ti-lbl">Charges</div>
+                  <div class="ti-val">₹ {{ ticket.totalCharges | number }}</div>
+                </div>
+                <div class="ti-row">
+                  <div class="ti-lbl">Amount Paid</div>
+                  <div class="ti-val">₹ {{ ticket.amountPaid | number }}</div>
+                </div>
+                <div class="ti-row">
+                  <div class="ti-lbl">Payment Mode</div>
+                  <div class="ti-val">{{ payModeName(ticket.paymentMode) }}</div>
+                </div>
+                <div class="ti-row">
+                  <div class="ti-lbl">Payment Status</div>
+                  <div class="ti-val">{{ ticket.paymentStatus }}</div>
+                </div>
+
+                <div class="ti-divider"></div>
+
+                <div class="ti-row">
+                  <div class="ti-lbl">Created By</div>
+                  <div class="ti-val">{{ ticket.createdBy }}</div>
+                </div>
+                <div class="ti-row">
+                  <div class="ti-lbl">Created At</div>
+                  <div class="ti-val">{{ ticket.createdAt | date:'dd/MM/yy HH:mm' }}</div>
+                </div>
+
+              </div>
+
+              <!-- Print actions -->
+              <div class="d-flex align-items-center gap-3 mt-3">
+                <button id="fld-pd-print" type="button" class="btn btn-success"
+                  (click)="doPrint()" [disabled]="printing">
+                  @if (printing) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>Printing…
+                  } @else {
+                    <i class="bi bi-printer me-2"></i>{{ printCount === 0 ? 'Print Duplicate' : 'Print Another Copy' }}
+                  }
+                </button>
+                @if (printCount > 0) {
+                  <span class="badge bg-success">
+                    <i class="bi bi-check-lg me-1"></i>Printed {{ printCount }}×
+                  </span>
+                }
+                <button type="button" class="btn btn-outline-secondary btn-sm ms-auto" (click)="resetForm()">
+                  <i class="bi bi-search me-1"></i>New Search
+                </button>
+              </div>
+              @if (printError) {
+                <div class="step-err mt-2"><i class="bi bi-exclamation-triangle me-1"></i>{{ printError }}</div>
+              }
+              <div class="step-hint mt-1"><kbd>Ctrl+P</kbd> print · <kbd>Esc</kbd> close</div>
+
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT: Info panel ═══════════════════════════════════════════════ -->
+  <div class="col-lg-5 no-print">
+    <div class="card shadow-sm border-0" style="background:#f8f9fa">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-info-circle text-secondary"></i>
+          <span class="fw-semibold text-secondary" style="font-size:.8rem">ABOUT THIS PAGE</span>
+        </div>
+        <p class="small text-muted mb-2">Search for any ticket by its number and print a duplicate copy.</p>
+        <ul class="small text-muted mb-3 ps-3">
+          <li>Works for both completed and pending tickets</li>
+          <li>Sends directly to the configured printer</li>
+          <li>You can print multiple copies</li>
+        </ul>
+        <hr>
+        <div class="d-flex flex-column gap-2">
+          <div class="d-flex justify-content-between align-items-center small">
+            <span class="text-muted">Navigate away</span>
+            <span><kbd>Esc</kbd> <kbd>F1</kbd> <kbd>F2</kbd> <kbd>F3</kbd> <kbd>F5</kbd></span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center small">
+            <span class="text-muted">Print</span>
+            <span><kbd>Ctrl+P</kbd></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

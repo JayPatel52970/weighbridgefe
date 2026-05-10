@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -79,6 +79,8 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
   printing = false;
   printError = '';
 
+  manualMode = false;
+
   liveWeight: WeightReadingDto | null = null;
   weightState: ConnectionState = 'disconnected';
 
@@ -99,11 +101,34 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
   isActive(s: Step): boolean { return this.currentStep === s; }
   isDone(s: Step): boolean { return this.currentStepIndex > this.steps.indexOf(s); }
 
+  @HostListener('mousedown', ['$event'])
+  onHostMousedown(e: MouseEvent): void {
+    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+      e.preventDefault();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocKeydown(e: KeyboardEvent): void {
+    if (e.altKey && e.key.toLowerCase() === 'm') {
+      e.preventDefault();
+      this.toggleManualMode();
+    }
+  }
+
+  toggleManualMode(): void {
+    this.manualMode = !this.manualMode;
+    if (!this.manualMode && this.liveWeight && this.isActive('secondWeight')) {
+      this.secondWeight = this.liveWeight.weightKg;
+    }
+    this.cdr.markForCheck();
+  }
+
   ngOnInit(): void {
     this.subs.add(
       this.realtimeWeight.weight$.subscribe(w => {
         this.liveWeight = w;
-        if (w && this.isActive('secondWeight')) this.secondWeight = w.weightKg;
+        if (w && this.isActive('secondWeight') && !this.manualMode) this.secondWeight = w.weightKg;
         this.cdr.markForCheck();
       })
     );
@@ -114,11 +139,12 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
       this.kb.shortcuts$.subscribe(key => {
         if (key === 'Escape') this.router.navigate(['/dashboard']);
         if (key === 'F3') this.router.navigate(['/weighment/second']);
+        if (key === 'F4') this.router.navigate(['/weighment/print-duplicate']);
         if (key === 'F5') this.router.navigate(['/weighment/one-go']);
         if (key === 'CtrlP' && this.result?.printAllowed) this.doPrint();
       })
     );
-    setTimeout(() => (document.getElementById('fld-ticketNumber') as HTMLElement)?.focus(), 100);
+    setTimeout(() => (document.getElementById('fld-d-ticketNumber') as HTMLElement)?.focus(), 100);
   }
 
   ngOnDestroy(): void { this.subs.unsubscribe(); }
@@ -317,7 +343,8 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
     this.printCount = 0;
     this.printing = false;
     this.printError = '';
+    this.manualMode = false;
     this.cdr.markForCheck();
-    setTimeout(() => (document.getElementById('fld-ticketNumber') as HTMLElement)?.focus(), 60);
+    setTimeout(() => (document.getElementById('fld-d-ticketNumber') as HTMLElement)?.focus(), 60);
   }
 }

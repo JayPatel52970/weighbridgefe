@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
@@ -97,6 +97,9 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
   printing = false;
   printError = '';
 
+  manualMode = false;
+  firstWeightKg: number | null = null;
+
   FirstWeighType = FirstWeighType;
   PaymentMode = PaymentMode;
 
@@ -116,6 +119,32 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
   isActive(s: Step): boolean { return this.currentStep === s; }
   isDone(s: Step): boolean { return this.currentStepIndex > this.steps.indexOf(s); }
 
+  @HostListener('mousedown', ['$event'])
+  onHostMousedown(e: MouseEvent): void {
+    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+      e.preventDefault();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocKeydown(e: KeyboardEvent): void {
+    if (e.altKey && e.key.toLowerCase() === 'm') {
+      e.preventDefault();
+      this.toggleManualMode();
+    }
+  }
+
+  toggleManualMode(): void {
+    this.manualMode = !this.manualMode;
+    if (!this.manualMode && this.liveWeight) {
+      this.firstWeightKg = this.liveWeight.weightKg;
+      this.fieldErrors['weighType'] = '';
+    }
+    if (!this.isActive('weighType')) { this.currentStepIndex = 0; this.cdr.markForCheck(); }
+    setTimeout(() => (document.getElementById('fld-firstWeightKg') as HTMLElement)?.focus(), 50);
+    this.cdr.markForCheck();
+  }
+
   ngOnInit(): void {
     this.api.getVehicleTypes(this.siteId).subscribe({ next: r => {
       this.vehicleTypes = r;
@@ -124,7 +153,11 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     } });
     this.api.listClients(0, 2000).subscribe({ next: r => { this.allClients = r; this.cdr.markForCheck(); } });
     this.subs.add(
-      this.realtimeWeight.weight$.subscribe(w => { this.liveWeight = w; this.cdr.markForCheck(); })
+      this.realtimeWeight.weight$.subscribe(w => {
+        this.liveWeight = w;
+        if (w && this.isActive('weighType') && !this.manualMode) this.firstWeightKg = w.weightKg;
+        this.cdr.markForCheck();
+      })
     );
     this.subs.add(
       this.realtimeWeight.connectionState$.subscribe(s => { this.weightState = s; this.cdr.markForCheck(); })
@@ -147,6 +180,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
         }
         if (key === 'F2') this.router.navigate(['/weighment/second-direct']);
         if (key === 'F3') this.router.navigate(['/weighment/second']);
+        if (key === 'F4') this.router.navigate(['/weighment/print-duplicate']);
         if (key === 'F5') this.router.navigate(['/weighment/one-go']);
       })
     );
@@ -220,10 +254,18 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
 
   private validateStep(step: Step): string {
     if (step === 'vehicle' && !this.vehicleSearch.trim()) return 'Vehicle number is required.';
+    if (step === 'weighType' && (!this.firstWeightKg || this.firstWeightKg <= 0))
+      return 'Weight is required and must be > 0.';
     return '';
   }
 
   // ─── Weight type ──────────────────────────────────────────────────────────────
+
+  onFirstWeightKey(e: KeyboardEvent): void {
+    if (e.key === 'Enter') { e.preventDefault(); this.advance('weighType'); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); this.navigateDown(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); this.navigateUp(); }
+  }
 
   setWeighType(t: FirstWeighType): void {
     this.firstWeighType = t;
@@ -276,7 +318,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
 
   // ─── Vehicle type ─────────────────────────────────────────────────────────────
 
-  private confirmVehicleType(): void {
+  confirmVehicleType(): void {
     const vt = this.vehicleTypes.find(t => t.id === this.selectedVehicleTypeId);
     if (vt) { this.charges = vt.price; this.paymentAmount = vt.price; }
     this.advance('vehicleType');
@@ -407,7 +449,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       clientId: this.selectedClient?.id ?? null,
       materialId: this.selectedMaterial?.id ?? null,
       driverName: this.driverName,
-      firstWeight: this.liveWeight?.weightKg ?? 0,
+      firstWeight: this.firstWeightKg ?? 0,
       firstWeighType: this.firstWeighType,
       totalCharges: this.charges,
       amountPaid: this.paymentAmount,
@@ -458,6 +500,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.driverName = '';
     this.saving = false; this.error = ''; this.result = null;
     this.showPrint = false; this.printCount = 0; this.printing = false; this.printError = '';
+    this.manualMode = false; this.firstWeightKg = null;
     this.cdr.markForCheck();
     this.focusStep('weighType');
   }

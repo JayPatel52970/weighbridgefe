@@ -1,6 +1,6 @@
 <div class="mb-3 d-flex align-items-center justify-content-between no-print">
   <h1 class="h4 mb-0"><i class="bi bi-arrow-left-right me-2 text-primary"></i>One-Go Weighment <span class="badge bg-primary ms-1">F5</span></h1>
-  <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F1</kbd> New Weighment &nbsp;<kbd>F2</kbd> Direct &nbsp;<kbd>F3</kbd> Ticket List &nbsp;<kbd>Ctrl+P</kbd> Print</small>
+  <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F1</kbd> New Weighment &nbsp;<kbd>F2</kbd> Direct &nbsp;<kbd>F3</kbd> Ticket List &nbsp;<kbd>F4</kbd> Print Dup &nbsp;<kbd>Ctrl+P</kbd> Print</small>
 </div>
 
 <div class="row g-3 align-items-start">
@@ -46,6 +46,9 @@
               <div class="step-val">{{ vehicleSearch }}</div>
             }
           </div>
+          @if (isActive('vehicle')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onVehicleEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -66,6 +69,9 @@
               <div class="step-val">{{ grossWeight | number:'1.0-0' }} kg</div>
             }
           </div>
+          @if (isActive('grossWeight')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('grossWeight')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -86,6 +92,9 @@
               <div class="step-val">{{ tareWeight | number:'1.0-0' }} kg</div>
             }
           </div>
+          @if (isActive('tareWeight')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('tareWeight')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -107,6 +116,9 @@
               <div class="step-val">{{ totalCharges > 0 ? ('₹ ' + (totalCharges | number)) : 'Auto' }}</div>
             }
           </div>
+          @if (isActive('charges')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onChargesEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -133,6 +145,9 @@
               <div class="step-val">{{ payModeName(paymentMode) }}</div>
             }
           </div>
+          @if (isActive('paymentMode')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('paymentMode')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -153,6 +168,9 @@
               <div class="step-val">₹ {{ paymentAmount | number }}</div>
             }
           </div>
+          @if (isActive('paymentAmount')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('paymentAmount')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -185,6 +203,9 @@
               <div class="step-val">{{ selectedMaterial?.name || '—' }}</div>
             }
           </div>
+          @if (isActive('material')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onMaterialEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -217,6 +238,9 @@
               <div class="step-val">{{ selectedClient?.name || '—' }}</div>
             }
           </div>
+          @if (isActive('client')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onClientEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -237,6 +261,9 @@
               <div class="step-val">{{ driverName || '—' }}</div>
             }
           </div>
+          @if (isActive('driverName')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('driverName')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 

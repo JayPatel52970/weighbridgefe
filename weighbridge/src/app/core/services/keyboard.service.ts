@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 
-export type ShortcutKey = 'F1' | 'F2' | 'F3' | 'F5' | 'Escape' | 'CtrlP' | 'ArrowUp' | 'ArrowDown' | 'Enter';
+export type ShortcutKey = 'F1' | 'F2' | 'F3' | 'F4' | 'F5' | 'Escape' | 'CtrlP' | 'ArrowUp' | 'ArrowDown' | 'Enter';
 
 @Injectable({ providedIn: 'root' })
 export class KeyboardService {
@@ -23,6 +23,7 @@ export class KeyboardService {
     if (e.key === 'F1') { e.preventDefault(); this.shortcut$.next('F1'); return; }
     if (e.key === 'F2') { e.preventDefault(); this.shortcut$.next('F2'); return; }
     if (e.key === 'F3') { e.preventDefault(); this.shortcut$.next('F3'); return; }
+    if (e.key === 'F4') { e.preventDefault(); this.shortcut$.next('F4'); return; }
     if (e.key === 'F5') { e.preventDefault(); this.shortcut$.next('F5'); return; }
     if (e.key === 'Escape') { this.shortcut$.next('Escape'); return; }
     if (e.ctrlKey && e.key === 'p') { e.preventDefault(); this.shortcut$.next('CtrlP'); return; }

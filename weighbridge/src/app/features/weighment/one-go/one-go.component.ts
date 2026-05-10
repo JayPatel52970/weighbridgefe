@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
@@ -114,6 +114,13 @@ export class OneGoComponent implements OnInit, OnDestroy {
   isActive(s: Step): boolean { return this.currentStep === s; }
   isDone(s: Step): boolean { return this.currentStepIndex > this.steps.indexOf(s); }
 
+  @HostListener('mousedown', ['$event'])
+  onHostMousedown(e: MouseEvent): void {
+    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+      e.preventDefault();
+    }
+  }
+
   ngOnInit(): void {
     this.api.listClients(0, 2000).subscribe({ next: r => { this.allClients = r; this.cdr.markForCheck(); } });
     this.subs.add(
@@ -145,6 +152,7 @@ export class OneGoComponent implements OnInit, OnDestroy {
         if (key === 'F1') this.router.navigate(['/weighment/first']);
         if (key === 'F2') this.router.navigate(['/weighment/second-direct']);
         if (key === 'F3') this.router.navigate(['/weighment/second']);
+        if (key === 'F4') this.router.navigate(['/weighment/print-duplicate']);
         if (key === 'CtrlP' && this.result?.printAllowed) this.doPrint();
       })
     );

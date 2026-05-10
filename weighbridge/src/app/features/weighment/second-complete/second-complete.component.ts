@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -76,6 +76,8 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
   printing = false;
   printError = '';
 
+  manualMode = false;
+
   liveWeight: WeightReadingDto | null = null;
   weightState: ConnectionState = 'disconnected';
 
@@ -95,15 +97,36 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
   isActive(s: Step): boolean { return this.currentStep === s; }
   isDone(s: Step): boolean { return this.currentStepIndex > this.steps.indexOf(s); }
 
+  @HostListener('mousedown', ['$event'])
+  onHostMousedown(e: MouseEvent): void {
+    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+      e.preventDefault();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocKeydown(e: KeyboardEvent): void {
+    if (e.altKey && e.key.toLowerCase() === 'm') {
+      e.preventDefault();
+      this.toggleManualMode();
+    }
+  }
+
+  toggleManualMode(): void {
+    this.manualMode = !this.manualMode;
+    if (!this.manualMode && this.liveWeight && this.isActive('secondWeight')) {
+      this.secondWeight = this.liveWeight.weightKg;
+    }
+    this.cdr.markForCheck();
+  }
+
   ngOnInit(): void {
     this.ticketId = this.route.snapshot.params['id'];
     this.loadTicket();
     this.subs.add(
       this.realtimeWeight.weight$.subscribe(w => {
         this.liveWeight = w;
-        if (w && this.isActive('secondWeight')) {
-          this.secondWeight = w.weightKg;
-        }
+        if (w && this.isActive('secondWeight') && !this.manualMode) this.secondWeight = w.weightKg;
         this.cdr.markForCheck();
       })
     );
@@ -113,6 +136,7 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
     this.subs.add(
       this.kb.shortcuts$.subscribe(key => {
         if (key === 'Escape') this.router.navigate(['/weighment/second']);
+        if (key === 'F4') this.router.navigate(['/weighment/print-duplicate']);
         if (key === 'CtrlP' && this.result?.printAllowed) this.doPrint();
       })
     );

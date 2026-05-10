@@ -8,6 +8,48 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+
+  <!-- Splash screen loader: covers app immediately, logo fades in, then whole screen fades out -->
+  <style>
+    /* Container: visible from frame 0, fades out only at the end */
+    @keyframes splashOut {
+      0%,75% { opacity: 1; }
+      100%    { opacity: 0; }
+    }
+    /* Logo: fades + scales in during first third */
+    @keyframes logoIn {
+      0%   { opacity: 0; transform: scale(0.88); }
+      33%  { opacity: 1; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    #splash {
+      position: fixed; inset: 0; z-index: 99999;
+      background: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+      animation: splashOut 3s ease forwards;
+    }
+    #splash img {
+      max-width: 480px; max-height: 320px; object-fit: contain;
+      animation: logoIn 3s ease forwards;
+    }
+    #splash .splash-tagline {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px; color: #6b7280; letter-spacing: 0.03em;
+      animation: logoIn 3s ease forwards;
+    }
+    #splash .splash-loading {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px; color: #9ca3af; letter-spacing: 0.12em; text-transform: uppercase;
+      animation: logoIn 3s ease forwards;
+    }
+  </style>
+  <div id="splash">
+    <img src="/dweck_logo.png" alt="">
+    <div class="splash-tagline">Enterprise Software powered by Dweck</div>
+    <div class="splash-loading">Loading&hellip;</div>
+  </div>
+  <script>setTimeout(function(){ var s=document.getElementById('splash'); if(s) s.remove(); }, 3050);</script>
+
   <div id="google_translate_element" style="position:fixed;top:8px;right:160px;z-index:9999;"></div>
   <app-root></app-root>
   <script type="text/javascript">

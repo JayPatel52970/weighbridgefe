@@ -2,7 +2,7 @@
   <div>
     <h1 class="h4 mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>First Weighment</h1>
   </div>
-  <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F2</kbd> Direct Complete &nbsp;<kbd>F3</kbd> Ticket List</small>
+  <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F2</kbd> Direct Complete &nbsp;<kbd>F3</kbd> Ticket List &nbsp;<kbd>F4</kbd> Print Duplicate</small>
 </div>
 
 <div class="row g-3 align-items-start">
@@ -31,12 +31,31 @@
                   <u>T</u>are
                 </button>
               </div>
-              <div class="step-hint"><kbd>←</kbd><kbd>→</kbd> toggle · <kbd>G</kbd> Gross · <kbd>T</kbd> Tare · <kbd>Enter</kbd> confirm · click to select</div>
+              <input id="fld-firstWeightKg" type="number" class="form-control mt-2" min="0" step="any"
+                [placeholder]="manualMode ? 'Enter weight manually (kg)' : 'Live scale auto-fills · or type manually'"
+                [(ngModel)]="firstWeightKg"
+                (keydown)="onFirstWeightKey($event)">
+              <div class="step-hint">
+                @if (manualMode) {
+                  <span class="badge bg-warning text-dark me-1" style="font-size:.58rem;vertical-align:middle">MANUAL</span>
+                  <kbd>Alt+M</kbd> switch to live · <kbd>Enter</kbd> confirm
+                } @else {
+                  <kbd>←</kbd><kbd>→</kbd> Gross/Tare · <kbd>Enter</kbd> confirm · <kbd>↑↓</kbd> navigate · <kbd>Alt+M</kbd> manual entry
+                }
+              </div>
               @if (fieldErrors['weighType']) { <div class="step-err">{{ fieldErrors['weighType'] }}</div> }
             } @else {
-              <div class="step-val">{{ weighTypeName(firstWeighType) }}</div>
+              <div class="step-val">
+                {{ weighTypeName(firstWeighType) }}
+                @if (firstWeightKg) {
+                  · <span class="badge {{ manualMode ? 'bg-warning text-dark' : 'bg-success' }} ms-1">{{ firstWeightKg | number:'1.0-0' }} kg</span>
+                }
+              </div>
             }
           </div>
+          @if (isActive('weighType')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('weighType')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -75,6 +94,9 @@
               <div class="step-val">{{ vehicleSearch }}</div>
             }
           </div>
+          @if (isActive('vehicle')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onVehicleEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -103,6 +125,9 @@
               <div class="step-val">{{ vehicleTypeName(selectedVehicleTypeId) }}</div>
             }
           </div>
+          @if (isActive('vehicleType')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="confirmVehicleType()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -123,6 +148,9 @@
               <div class="step-val">₹ {{ charges | number }}</div>
             }
           </div>
+          @if (isActive('charges')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onChargesEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -149,6 +177,9 @@
               <div class="step-val">{{ payModeName(paymentMode) }}</div>
             }
           </div>
+          @if (isActive('paymentMode')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('paymentMode')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -169,6 +200,9 @@
               <div class="step-val">₹ {{ paymentAmount | number }}</div>
             }
           </div>
+          @if (isActive('paymentAmount')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('paymentAmount')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -201,6 +235,9 @@
               <div class="step-val">{{ selectedMaterial?.name || '—' }}</div>
             }
           </div>
+          @if (isActive('material')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onMaterialEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -233,6 +270,9 @@
               <div class="step-val">{{ selectedClient?.name || '—' }}</div>
             }
           </div>
+          @if (isActive('client')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onClientEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -253,6 +293,9 @@
               <div class="step-val">{{ driverName || '—' }}</div>
             }
           </div>
+          @if (isActive('driverName')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="advance('driverName')" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
         </div>
         <hr class="m-0">
 
@@ -365,7 +408,7 @@
       <div class="po-body">
         <div class="po-row"><span class="po-lbl">Vehicle</span><span class="po-val">{{ vehicleSearch }}</span></div>
         <div class="po-row"><span class="po-lbl">Weight Type</span><span class="po-val">{{ weighTypeName(firstWeighType) }}</span></div>
-        <div class="po-row"><span class="po-lbl">Weight</span><span class="po-val">{{ (liveWeight?.weightKg ?? 0) | number:'1.0-0' }} kg</span></div>
+        <div class="po-row"><span class="po-lbl">Weight</span><span class="po-val">{{ (firstWeightKg ?? 0) | number:'1.0-0' }} kg</span></div>
         @if (selectedMaterial) {
           <div class="po-row"><span class="po-lbl">Material</span><span class="po-val">{{ selectedMaterial.name }}</span></div>
         }

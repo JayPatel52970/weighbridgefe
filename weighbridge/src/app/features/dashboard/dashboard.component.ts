@@ -37,6 +37,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (key === 'F1') this.router.navigate(['/weighment/first']);
         if (key === 'F2') this.router.navigate(['/weighment/second-direct']);
         if (key === 'F3') this.router.navigate(['/weighment/second']);
+        if (key === 'F4') this.router.navigate(['/weighment/print-duplicate']);
         if (key === 'F5') this.router.navigate(['/weighment/one-go']);
       })
     );

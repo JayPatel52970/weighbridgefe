@@ -1,8 +1,23 @@
 <div class="app-wrapper">
   <app-topnav></app-topnav>
   <app-sidebar></app-sidebar>
-  <main class="app-main">
-    <div class="app-content-header">
+
+  @if (isWeighmentRoute) {
+    <div class="wm-backdrop" (click)="closeWeighment()"></div>
+  }
+
+  <main class="app-main" [class.wm-window]="isWeighmentRoute">
+    @if (isWeighmentRoute) {
+      <div class="wm-titlebar">
+        <span class="wm-title">
+          <i class="bi {{ weighmentIcon }} me-2"></i>{{ weighmentTitle }}
+        </span>
+        <button class="wm-close-btn" (click)="closeWeighment()" title="Close (Esc)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    }
+    <div class="app-content-header" [class.d-none]="isWeighmentRoute">
       <div class="container-fluid"></div>
     </div>
     <div class="app-content">
@@ -11,8 +26,9 @@
       </div>
     </div>
   </main>
-  <footer class="app-footer">
-    <strong>Weighbridge</strong> &copy; {{ year }}
+
+  <footer class="app-footer" [class.d-none]="isWeighmentRoute">
+    <strong>DWECK ENTERPRISE SOFTWARES -Weighbridge</strong> &copy; {{ year }}
     <span class="float-end d-none d-sm-inline text-muted">v1.0</span>
   </footer>
 </div>
