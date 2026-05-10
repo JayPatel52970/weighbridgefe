@@ -165,9 +165,9 @@ export class PrintDuplicateComponent implements OnInit, OnDestroy {
   }
 
   statusLabel(s: WeighmentStatus): string {
-    return s === WeighmentStatus.Completed ? 'Completed'
-      : s === WeighmentStatus.PendingSecondWeight ? 'Pending 2nd Weight'
-      : 'Cancelled';
+    return s === WeighmentStatus.Completed ? 'status.completed'
+      : s === WeighmentStatus.PendingSecondWeight ? 'status.pendingSecond'
+      : 'status.cancelled';
   }
 
   statusBadge(s: WeighmentStatus): string {
@@ -177,10 +177,10 @@ export class PrintDuplicateComponent implements OnInit, OnDestroy {
   }
 
   weighTypeName(t: FirstWeighType): string {
-    return t === FirstWeighType.Gross ? 'Gross' : 'Tare';
+    return t === FirstWeighType.Gross ? 'btn.gross' : 'btn.tare';
   }
 
   payModeName(m: PaymentMode): string {
-    return m === PaymentMode.Cash ? 'Cash' : m === PaymentMode.Online ? 'Online' : 'Credit';
+    return m === PaymentMode.Cash ? 'btn.cash' : m === PaymentMode.Online ? 'btn.online' : 'btn.credit';
   }
 }

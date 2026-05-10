@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { FirstWeighmentComponent } from './first/first-weighment.component';
 import { SecondListComponent } from './second-list/second-list.component';
 import { SecondCompleteComponent } from './second-complete/second-complete.component';
@@ -20,6 +21,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [FirstWeighmentComponent, SecondListComponent, SecondCompleteComponent, SecondDirectComponent, OneGoComponent, PrintDuplicateComponent],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes)]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes), TranslateModule]
 })
 export class WeighmentModule {}

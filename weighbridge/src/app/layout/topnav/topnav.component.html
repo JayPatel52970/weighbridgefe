@@ -22,6 +22,14 @@
       </li>
     </ul>
 
+    <ul class="navbar-nav me-2">
+      <li class="nav-item d-flex align-items-center gap-1">
+        @for (l of lang.langs; track l.code) {
+          <button class="lang-btn" [class.active]="lang.currentLang === l.code" (click)="lang.setLang(l.code)">{{ l.label }}</button>
+        }
+      </li>
+    </ul>
+
     <ul class="navbar-nav ms-auto">
       @if (profile; as p) {
         <li class="nav-item">

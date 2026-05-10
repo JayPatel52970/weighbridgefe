@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { LangService } from '../../core/services/lang.service';
 import { RealtimeWeightService, ConnectionState } from '../../core/realtime/realtime-weight.service';
 import { SavedProfile, WeightReadingDto } from '../../core/models';
 
@@ -13,6 +14,8 @@ import { SavedProfile, WeightReadingDto } from '../../core/models';
     .wt-dot { width:8px; height:8px; border-radius:50%; background:#6c757d; flex-shrink:0; transition:background .4s; }
     .wt-dot.wt-on   { background:#198754; box-shadow:0 0 6px #19875488; }
     .wt-dot.wt-warn { background:#ffc107; }
+    .lang-btn { border:1px solid #dee2e6; background:#fff; border-radius:4px; padding:2px 8px; font-size:.73rem; cursor:pointer; color:#495057; line-height:1.4; }
+    .lang-btn.active { background:#0d6efd; color:#fff; border-color:#0d6efd; }
   `]
 })
 export class TopnavComponent implements OnInit, OnDestroy {
@@ -26,6 +29,7 @@ export class TopnavComponent implements OnInit, OnDestroy {
 
   constructor(
     public auth: AuthService,
+    public lang: LangService,
     private realtimeWeight: RealtimeWeightService,
     private cdr: ChangeDetectorRef
   ) {}

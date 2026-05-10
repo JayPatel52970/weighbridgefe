@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs cat)",
+      "Bash(Remove-Item \"j:\\\\weighbridge\\\\frontend\\\\weighbridge\\\\src\\\\app\\\\core\\\\services\\\\lang.service.ts\" -Force)",
+      "Bash(Remove-Item \"j:\\\\weighbridge\\\\frontend\\\\public\\\\i18n\" -Recurse -Force)",
+      "PowerShell(New-Item -ItemType Directory -Force \"j:\\\\weighbridge\\\\frontend\\\\public\\\\i18n\")"
+    ]
+  }
+}

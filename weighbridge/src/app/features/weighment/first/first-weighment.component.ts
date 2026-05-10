@@ -506,11 +506,11 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
   }
 
   payModeName(m: PaymentMode): string {
-    return m === PaymentMode.Cash ? 'Cash' : m === PaymentMode.Online ? 'Online' : 'Credit';
+    return m === PaymentMode.Cash ? 'btn.cash' : m === PaymentMode.Online ? 'btn.online' : 'btn.credit';
   }
 
   weighTypeName(t: FirstWeighType): string {
-    return t === FirstWeighType.Gross ? 'Gross' : 'Tare';
+    return t === FirstWeighType.Gross ? 'btn.gross' : 'btn.tare';
   }
 
   vehicleTypeName(id: string | null): string {

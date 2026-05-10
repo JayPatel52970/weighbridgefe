@@ -1,11 +1,10 @@
 <div class="mb-3 d-flex align-items-center justify-content-between no-print">
-  <h1 class="h4 mb-0"><i class="bi bi-arrow-left-right me-2 text-primary"></i>One-Go Weighment <span class="badge bg-primary ms-1">F5</span></h1>
+  <h1 class="h4 mb-0"><i class="bi bi-arrow-left-right me-2 text-primary"></i>{{ 'page.oneGoWeighment' | translate }} <span class="badge bg-primary ms-1">F5</span></h1>
   <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F1</kbd> New Weighment &nbsp;<kbd>F2</kbd> Direct &nbsp;<kbd>F3</kbd> Ticket List &nbsp;<kbd>F4</kbd> Print Dup &nbsp;<kbd>Ctrl+P</kbd> Print</small>
 </div>
 
 <div class="row g-3 align-items-start">
 
-  <!-- ═══ LEFT: Step form ═══════════════════════════════════════════════════ -->
   <div class="col-lg-7">
     <div class="card shadow-sm">
       <div class="card-body p-0">
@@ -15,7 +14,7 @@
              (click)="isDone('vehicle') && goBack(0)">
           <div class="step-num">{{ isDone('vehicle') ? '✓' : '1' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Vehicle Number <span class="text-danger">*</span></div>
+            <div class="step-lbl">{{ 'lbl.vehicleNumber' | translate }} <span class="text-danger">*</span></div>
             @if (isActive('vehicle')) {
               <div class="position-relative mt-2">
                 <input id="fld-og-vehicle" type="text" class="form-control" autocomplete="off"
@@ -52,12 +51,12 @@
         </div>
         <hr class="m-0">
 
-        <!-- 2 · Gross Weight (live scale) -->
+        <!-- 2 · Gross Weight -->
         <div class="step-row" [class.active]="isActive('grossWeight')" [class.done]="isDone('grossWeight')"
              (click)="isDone('grossWeight') && goBack(1)">
           <div class="step-num">{{ isDone('grossWeight') ? '✓' : '2' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Gross Weight (kg) <span class="text-danger">*</span></div>
+            <div class="step-lbl">{{ 'lbl.grossWeight' | translate }} <span class="text-danger">*</span></div>
             @if (isActive('grossWeight')) {
               <input id="fld-og-grossWeight" type="number" class="form-control mt-2" min="1"
                 placeholder="Live scale auto-fills · or type manually"
@@ -75,12 +74,12 @@
         </div>
         <hr class="m-0">
 
-        <!-- 3 · Tare Weight (manual) -->
+        <!-- 3 · Tare Weight -->
         <div class="step-row" [class.active]="isActive('tareWeight')" [class.done]="isDone('tareWeight')"
              (click)="isDone('tareWeight') && goBack(2)">
           <div class="step-num">{{ isDone('tareWeight') ? '✓' : '3' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Known Tare Weight (kg) <span class="text-danger">*</span></div>
+            <div class="step-lbl">{{ 'lbl.tareWeight' | translate }} <span class="text-danger">*</span></div>
             @if (isActive('tareWeight')) {
               <input id="fld-og-tareWeight" type="number" class="form-control mt-2" min="0"
                 placeholder="Enter driver's known tare weight"
@@ -103,7 +102,7 @@
              (click)="isDone('charges') && goBack(3)">
           <div class="step-num">{{ isDone('charges') ? '✓' : '4' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Charges (₹)</div>
+            <div class="step-lbl">{{ 'lbl.charges' | translate }}</div>
             @if (isActive('charges')) {
               <input id="fld-og-charges" type="number" class="form-control mt-2" min="0"
                 placeholder="0 = auto-compute from backend"
@@ -127,22 +126,22 @@
              (click)="isDone('paymentMode') && goBack(4)">
           <div class="step-num">{{ isDone('paymentMode') ? '✓' : '5' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Payment Mode</div>
+            <div class="step-lbl">{{ 'lbl.paymentMode' | translate }}</div>
             @if (isActive('paymentMode')) {
               <div class="d-flex gap-2 mt-2" id="fld-og-paymentMode" tabindex="0" (keydown)="onPaymentModeKey($event)">
                 <button type="button" class="btn btn-sm px-3"
                   [class]="paymentMode === PaymentMode.Cash ? 'btn-primary' : 'btn-outline-secondary'"
-                  (click)="setPaymentMode(PaymentMode.Cash)"><u>C</u>ash</button>
+                  (click)="setPaymentMode(PaymentMode.Cash)">{{ 'btn.cash' | translate }}</button>
                 <button type="button" class="btn btn-sm px-3"
                   [class]="paymentMode === PaymentMode.Online ? 'btn-primary' : 'btn-outline-secondary'"
-                  (click)="setPaymentMode(PaymentMode.Online)"><u>O</u>nline</button>
+                  (click)="setPaymentMode(PaymentMode.Online)">{{ 'btn.online' | translate }}</button>
                 <button type="button" class="btn btn-sm px-3"
                   [class]="paymentMode === PaymentMode.Credit ? 'btn-primary' : 'btn-outline-secondary'"
-                  (click)="setPaymentMode(PaymentMode.Credit)">C<u>r</u>edit</button>
+                  (click)="setPaymentMode(PaymentMode.Credit)">{{ 'btn.credit' | translate }}</button>
               </div>
               <div class="step-hint"><kbd>←</kbd><kbd>→</kbd> cycle · <kbd>C</kbd> Cash · <kbd>O</kbd> Online · <kbd>R</kbd> Credit · <kbd>Enter</kbd> confirm</div>
             } @else {
-              <div class="step-val">{{ payModeName(paymentMode) }}</div>
+              <div class="step-val">{{ payModeName(paymentMode) | translate }}</div>
             }
           </div>
           @if (isActive('paymentMode')) {
@@ -156,7 +155,7 @@
              (click)="isDone('paymentAmount') && goBack(5)">
           <div class="step-num">{{ isDone('paymentAmount') ? '✓' : '6' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Amount Paid (₹)</div>
+            <div class="step-lbl">{{ 'lbl.amountPaid' | translate }}</div>
             @if (isActive('paymentAmount')) {
               <input id="fld-og-paymentAmount" type="number" class="form-control mt-2" min="0"
                 [(ngModel)]="paymentAmount"
@@ -179,7 +178,7 @@
              (click)="isDone('material') && goBack(6)">
           <div class="step-num">{{ isDone('material') ? '✓' : '7' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Material <span class="text-muted fw-normal">(optional)</span></div>
+            <div class="step-lbl">{{ 'lbl.material' | translate }} <span class="text-muted fw-normal">{{ 'lbl.optional' | translate }}</span></div>
             @if (isActive('material')) {
               <div class="position-relative mt-2">
                 <input id="fld-og-material" type="text" class="form-control" autocomplete="off"
@@ -214,7 +213,7 @@
              (click)="isDone('client') && goBack(7)">
           <div class="step-num">{{ isDone('client') ? '✓' : '8' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Client <span class="text-muted fw-normal">(optional)</span></div>
+            <div class="step-lbl">{{ 'lbl.client' | translate }} <span class="text-muted fw-normal">{{ 'lbl.optional' | translate }}</span></div>
             @if (isActive('client')) {
               <div class="position-relative mt-2">
                 <input id="fld-og-client" type="text" class="form-control" autocomplete="off"
@@ -249,7 +248,7 @@
              (click)="isDone('driverName') && goBack(8)">
           <div class="step-num">{{ isDone('driverName') ? '✓' : '9' }}</div>
           <div class="step-body">
-            <div class="step-lbl">Driver Name <span class="text-muted fw-normal">(optional)</span></div>
+            <div class="step-lbl">{{ 'lbl.driverName' | translate }} <span class="text-muted fw-normal">{{ 'lbl.optional' | translate }}</span></div>
             @if (isActive('driverName')) {
               <input id="fld-og-driverName" type="text" class="form-control mt-2"
                 placeholder="Driver name or Enter to skip"
@@ -271,28 +270,28 @@
         <div class="step-row" [class.active]="isActive('confirm')">
           <div class="step-num">10</div>
           <div class="step-body">
-            <div class="step-lbl">Confirm &amp; Complete</div>
+            <div class="step-lbl">{{ 'lbl.confirmComplete' | translate }}</div>
             @if (isActive('confirm')) {
               <div class="mt-2">
                 @if (error) { <div class="alert alert-danger py-2 mb-2 small">{{ error }}</div> }
                 <div class="d-flex flex-wrap gap-2 mb-2 small text-muted">
                   <span><i class="bi bi-truck me-1"></i>{{ vehicleSearch }}</span>
                   <span>·</span>
-                  <span>Gross {{ grossWeight | number:'1.0-0' }} kg</span>
+                  <span>{{ 'btn.gross' | translate }} {{ grossWeight | number:'1.0-0' }} kg</span>
                   <span>·</span>
-                  <span>Tare {{ tareWeight | number:'1.0-0' }} kg</span>
+                  <span>{{ 'btn.tare' | translate }} {{ tareWeight | number:'1.0-0' }} kg</span>
                   @if (totalCharges > 0) {
                     <span>·</span>
                     <span>₹{{ totalCharges }}</span>
                   }
                   <span>·</span>
-                  <span>{{ payModeName(paymentMode) }}</span>
+                  <span>{{ payModeName(paymentMode) | translate }}</span>
                 </div>
                 <button id="fld-og-confirm" type="button" class="btn btn-primary"
                   (click)="save()" [disabled]="saving">
                   @if (saving) { <span class="spinner-border spinner-border-sm me-2"></span> }
                   @else { <i class="bi bi-check2-circle me-2"></i> }
-                  Complete Weighment
+                  {{ 'btn.completeWeighment' | translate }}
                 </button>
               </div>
             }
@@ -310,7 +309,7 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex align-items-center">
           <span class="wp-live-dot" [class.on]="weightState === 'connected'" [class.warn]="weightState === 'reconnecting'" [class.off]="weightState === 'disconnected'"></span>
-          <span class="wp-tag">Live Scale</span>
+          <span class="wp-tag">{{ 'lbl.liveScale' | translate }}</span>
         </div>
         <span class="wp-conn" [class.ok]="weightState === 'connected'" [class.warn]="weightState === 'reconnecting'" [class.off]="weightState === 'disconnected'">
           {{ weightState === 'connected' ? 'CONNECTED' : weightState === 'reconnecting' ? 'RECONNECT...' : 'OFFLINE' }}
@@ -361,22 +360,22 @@
         </div>
       }
 
-      <div class="wp-label mb-2">Capture Options</div>
+      <div class="wp-label mb-2">{{ 'lbl.captureOptions' | translate }}</div>
       <div class="d-flex flex-column gap-2">
         <label class="wp-cam-lbl">
           <input type="checkbox" [(ngModel)]="captureVehicleImage" class="form-check-input m-0">
           <i class="bi bi-camera text-secondary"></i>
-          <span>Vehicle Image</span>
+          <span>{{ 'lbl.vehicleImage' | translate }}</span>
         </label>
         <label class="wp-cam-lbl">
           <input type="checkbox" [(ngModel)]="captureOperatorImage" class="form-check-input m-0">
           <i class="bi bi-person-video text-secondary"></i>
-          <span>Operator Image</span>
+          <span>{{ 'lbl.operatorImage' | translate }}</span>
         </label>
         <label class="wp-cam-lbl">
           <input type="checkbox" [(ngModel)]="printRequested" class="form-check-input m-0">
           <i class="bi bi-printer text-secondary"></i>
-          <span>Request Print</span>
+          <span>{{ 'lbl.requestPrint' | translate }}</span>
         </label>
       </div>
 
@@ -394,7 +393,7 @@
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-check-circle-fill fs-4"></i>
           <div>
-            <div class="fw-bold fs-5">Weighment Complete</div>
+            <div class="fw-bold fs-5">{{ 'print.weighmentComplete' | translate }}</div>
             <div style="opacity:.8;font-size:.85rem">{{ result.ticketNumber }}</div>
           </div>
           <span class="ms-auto badge bg-white bg-opacity-20 fs-6">#{{ result.serialNumber }}</span>
@@ -402,28 +401,28 @@
       </div>
 
       <div class="po-body">
-        <div class="po-row"><span class="po-lbl">Vehicle</span><span class="po-val">{{ vehicleSearch }}</span></div>
-        <div class="po-row"><span class="po-lbl">Gross Weight</span><span class="po-val">{{ result.grossWeight | number:'1.0-0' }} kg</span></div>
-        <div class="po-row"><span class="po-lbl">Tare Weight</span><span class="po-val">{{ result.tareWeight | number:'1.0-0' }} kg</span></div>
+        <div class="po-row"><span class="po-lbl">{{ 'print.vehicle' | translate }}</span><span class="po-val">{{ vehicleSearch }}</span></div>
+        <div class="po-row"><span class="po-lbl">{{ 'print.grossWeight' | translate }}</span><span class="po-val">{{ result.grossWeight | number:'1.0-0' }} kg</span></div>
+        <div class="po-row"><span class="po-lbl">{{ 'print.tareWeight' | translate }}</span><span class="po-val">{{ result.tareWeight | number:'1.0-0' }} kg</span></div>
         <div class="po-row">
-          <span class="po-lbl">Net Weight</span>
+          <span class="po-lbl">{{ 'print.netWeight' | translate }}</span>
           <span class="po-val text-success fw-bold">{{ result.netWeight | number:'1.0-0' }} kg</span>
         </div>
         @if (selectedMaterial) {
-          <div class="po-row"><span class="po-lbl">Material</span><span class="po-val">{{ selectedMaterial.name }}</span></div>
+          <div class="po-row"><span class="po-lbl">{{ 'print.material' | translate }}</span><span class="po-val">{{ selectedMaterial.name }}</span></div>
         }
         @if (selectedClient) {
-          <div class="po-row"><span class="po-lbl">Client</span><span class="po-val">{{ selectedClient.name }}</span></div>
+          <div class="po-row"><span class="po-lbl">{{ 'print.client' | translate }}</span><span class="po-val">{{ selectedClient.name }}</span></div>
         }
         @if (driverName) {
-          <div class="po-row"><span class="po-lbl">Driver</span><span class="po-val">{{ driverName }}</span></div>
+          <div class="po-row"><span class="po-lbl">{{ 'print.driver' | translate }}</span><span class="po-val">{{ driverName }}</span></div>
         }
         @if (result.suggestedCharges && result.suggestedCharges !== result.totalCharges) {
-          <div class="po-row"><span class="po-lbl">Suggested ₹</span><span class="po-val text-muted">{{ result.suggestedCharges | number }}</span></div>
+          <div class="po-row"><span class="po-lbl">{{ 'print.suggestedCharges' | translate }}</span><span class="po-val text-muted">{{ result.suggestedCharges | number }}</span></div>
         }
-        <div class="po-row"><span class="po-lbl">Charges</span><span class="po-val">₹ {{ result.totalCharges | number }}</span></div>
-        <div class="po-row"><span class="po-lbl">Paid</span><span class="po-val">₹ {{ result.amountPaid | number }}</span></div>
-        <div class="po-row"><span class="po-lbl">Payment</span><span class="po-val">{{ result.paymentStatus }}</span></div>
+        <div class="po-row"><span class="po-lbl">{{ 'print.charges' | translate }}</span><span class="po-val">₹ {{ result.totalCharges | number }}</span></div>
+        <div class="po-row"><span class="po-lbl">{{ 'print.paid' | translate }}</span><span class="po-val">₹ {{ result.amountPaid | number }}</span></div>
+        <div class="po-row"><span class="po-lbl">{{ 'print.payment' | translate }}</span><span class="po-val">{{ result.paymentStatus }}</span></div>
         @if (!result.printAllowed && result.printBlockedReason) {
           <div class="mt-2 small text-warning"><i class="bi bi-exclamation-triangle me-1"></i>{{ result.printBlockedReason }}</div>
         }
@@ -431,7 +430,7 @@
 
       <div class="po-foot">
         <button type="button" class="btn btn-outline-secondary btn-sm me-auto" (click)="newEntry()">
-          <i class="bi bi-plus me-1"></i>New Entry
+          <i class="bi bi-plus me-1"></i>{{ 'btn.newEntry' | translate }}
         </button>
         @if (printError) {
           <span class="text-danger small align-self-center">
@@ -441,9 +440,9 @@
         @if (result.printAllowed) {
           <button id="og-print-btn" type="button" class="btn btn-primary btn-sm" [disabled]="printing" (click)="doPrint()">
             @if (printing) {
-              <span class="spinner-border spinner-border-sm me-1"></span>Printing…
+              <span class="spinner-border spinner-border-sm me-1"></span>{{ 'print.printing' | translate }}
             } @else {
-              <i class="bi bi-printer me-1"></i>{{ printCount === 0 ? 'Print Ticket' : 'Print Another Copy' }}
+              <i class="bi bi-printer me-1"></i>{{ (printCount === 0 ? 'btn.printTicket' : 'btn.printAnother') | translate }}
             }
           </button>
         }

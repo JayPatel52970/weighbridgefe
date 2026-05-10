@@ -1,7 +1,7 @@
 <div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
   <h1 class="h3 mb-0">
-    <i class="bi bi-clipboard-check me-2 text-success"></i>Second Weighment
-    <small class="text-muted ms-2 fs-6">Pending Tickets</small>
+    <i class="bi bi-clipboard-check me-2 text-success"></i>{{ 'page.secondWeighment' | translate }}
+    <small class="text-muted ms-2 fs-6">{{ 'lbl.pendingTickets' | translate }}</small>
   </h1>
   <span class="badge bg-info">F3</span>
   <small class="text-muted ms-auto"><kbd>↑ ↓</kbd> Navigate &nbsp;<kbd>Enter</kbd> Open &nbsp;<kbd>F2</kbd> Direct &nbsp;<kbd>F4</kbd> Print Dup &nbsp;<kbd>Esc</kbd> Dashboard</small>
@@ -22,7 +22,7 @@
       </div>
       <div class="col-md-6 text-end">
         <button class="btn btn-primary" routerLink="/weighment/first">
-          <i class="bi bi-plus me-1"></i>New Weighment
+          <i class="bi bi-plus me-1"></i>{{ 'btn.newWeighment' | translate }}
         </button>
       </div>
     </div>
@@ -36,7 +36,7 @@
     } @else if (filtered.length === 0) {
       <div class="text-center p-4 text-muted">
         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-        <p>{{ search ? 'No tickets match your search' : 'No pending tickets found' }}</p>
+        <p>{{ search ? ('msg.noMatch' | translate) : ('msg.noPending' | translate) }}</p>
       </div>
     } @else {
       <div class="table-responsive">
@@ -44,13 +44,13 @@
           <thead class="table-light">
             <tr>
               <th style="width:50px">#</th>
-              <th>Ticket</th>
-              <th>Vehicle</th>
-              <th>Client</th>
-              <th>Driver</th>
-              <th>1st Weight (kg)</th>
-              <th>1st Time</th>
-              <th>Charges</th>
+              <th>{{ 'tbl.ticket' | translate }}</th>
+              <th>{{ 'tbl.vehicle' | translate }}</th>
+              <th>{{ 'tbl.client' | translate }}</th>
+              <th>{{ 'tbl.driver' | translate }}</th>
+              <th>{{ 'tbl.firstWeight' | translate }}</th>
+              <th>{{ 'tbl.firstTime' | translate }}</th>
+              <th>{{ 'tbl.charges' | translate }}</th>
               <th></th>
             </tr>
           </thead>
