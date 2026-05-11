@@ -2,37 +2,55 @@ stages:
   - stage: Build
     displayName: Build Stage
     jobs:
-      - job : BuildJob
+      - job: BuildJob
         displayName: Build Job 1    
         pool:
           vmImage: 'Ubuntu-22.04'
         steps:
         - task: NodeTool@0
           inputs:
-            versionSpec: '25.x'
+            versionSpec: '24.x'  # ← Changed from 25.x (odd/non-LTS) to 22.x (LTS)
+        
+        - script: |
+            node --version
+            npm --version
+          displayName: 'Check Node and npm versions'
+        
         - script: |
             npm install -g @angular/cli
-            npm install
-            ng build --configuration=production
-          displayName: 'npm install and build'
+          displayName: 'Install Angular CLI globally'
+        
         - script: |
-           npm pack
+            cd weighbridge
+            npm ci
+          displayName: 'Install dependencies'
+        
+        - script: |
+            cd weighbridge
+            ng build --configuration=production
+          displayName: 'Build Angular app'
+        
+        - script: |
+            cd weighbridge
+            npm pack
           displayName: 'Package for npm release'
+        
         - task: ArchiveFiles@2
           displayName: 'Archive files'
           inputs:
-            rootFolderOrFile: '$(System.DefaultWorkingDirectory)/dist'
+            rootFolderOrFile: '$(System.DefaultWorkingDirectory)/weighbridge/dist'
             includeRootFolder: false
             archiveType: zip
             archiveFile: $(Build.ArtifactStagingDirectory)/wbfe.zip
             replaceExistingArchive: true
+        
         - upload: $(Build.ArtifactStagingDirectory)/wbfe.zip
           artifact: drop
+        
         - task: CopyFiles@2
           inputs:
-            SourceFolder: '$(System.DefaultWorkingDirectory)/dist'
+            SourceFolder: '$(System.DefaultWorkingDirectory)/weighbridge/dist'
             Contents: '**'
             TargetFolder: '$(Build.ArtifactStagingDirectory)/wbfe'
             CleanTargetFolder: true
             OverWrite: true
-
