@@ -9,7 +9,7 @@ stages:
         steps:
         - task: NodeTool@0
           inputs:
-            versionSpec: '24.x'  # ← Changed from 25.x (odd/non-LTS) to 22.x (LTS)
+            versionSpec: '22.x'
         
         - script: |
             node --version
@@ -22,7 +22,7 @@ stages:
         
         - script: |
             cd weighbridge
-            npm ci
+            npm install --production=false
           displayName: 'Install dependencies'
         
         - script: |
