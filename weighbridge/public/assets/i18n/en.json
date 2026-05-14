@@ -113,5 +113,6 @@
   "dash.offline": "OFFLINE",
   "dash.stable": "STABLE",
   "dash.motion": "MOTION",
-  "dash.quickActions": "Quick Actions"
+  "dash.quickActions": "Quick Actions",
+  "dash.zeroScale": "Zero Scale"
 }

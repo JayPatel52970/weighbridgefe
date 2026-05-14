@@ -113,5 +113,6 @@
   "dash.offline": "ऑफ़लाइन",
   "dash.stable": "स्थिर",
   "dash.motion": "गतिमान",
-  "dash.quickActions": "त्वरित क्रियाएं"
+  "dash.quickActions": "त्वरित क्रियाएं",
+  "dash.zeroScale": "स्केल ज़ीरो करें"
 }

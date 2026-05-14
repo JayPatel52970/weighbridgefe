@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, finalize } from 'rxjs';
 import { KeyboardService } from '../../core/services/keyboard.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
 import { RealtimeWeightService, ConnectionState } from '../../core/realtime/realtime-weight.service';
 import { WeightReadingDto } from '../../core/models';
 
@@ -14,6 +15,8 @@ import { WeightReadingDto } from '../../core/models';
 export class DashboardComponent implements OnInit, OnDestroy {
   liveWeight: WeightReadingDto | null = null;
   weightState: ConnectionState = 'disconnected';
+  zeroing = false;
+  zeroMsg = '';
 
   private subs = new Subscription();
 
@@ -21,6 +24,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private kb: KeyboardService,
     private router: Router,
     public auth: AuthService,
+    private api: ApiService,
     private realtimeWeight: RealtimeWeightService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -41,6 +45,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (key === 'F5') this.router.navigate(['/weighment/one-go']);
       })
     );
+  }
+
+  zeroScale(): void {
+    this.zeroing = true;
+    this.zeroMsg = '';
+    this.cdr.markForCheck();
+    this.api.zeroScale()
+      .pipe(finalize(() => { this.zeroing = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: r => { this.zeroMsg = r.status === 'ok' ? 'Zeroed' : (r.message ?? 'Failed'); this.cdr.markForCheck(); },
+        error: () => { this.zeroMsg = 'Failed'; this.cdr.markForCheck(); }
+      });
   }
 
   ngOnDestroy(): void { this.subs.unsubscribe(); }

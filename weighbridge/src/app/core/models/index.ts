@@ -459,3 +459,41 @@ export interface WeightReadingDto {
   timestampUtc: string;
   mode?: string;
 }
+
+// ─── Scale / Indicator ────────────────────────────────────────────────────────
+
+export interface IndicatorSettings {
+  siteId: number;
+  serialPort: string;
+  baudRate: number;
+  zeroKeyCombination: string;
+  writeTimeoutMs: number;
+  id: string;
+  createdAt: string;
+  createdBy?: string;
+  updatedAt?: string | null;
+  updatedBy?: string;
+  isDeleted: boolean;
+}
+
+export interface UpdateIndicatorSettingsRequest {
+  siteId: number;
+  serialPort: string;
+  baudRate: number;
+  zeroKeyCombination: string;
+  writeTimeoutMs: number;
+}
+
+export interface ScaleHealthResponse {
+  status: 'online' | 'offline';
+  port?: string;
+  reason?: string;
+}
+
+export interface ScaleActionResponse {
+  status: 'ok' | 'error';
+  action?: string;
+  keys?: string;
+  timestamp?: string;
+  message?: string;
+}

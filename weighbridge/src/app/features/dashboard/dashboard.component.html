@@ -129,6 +129,13 @@
         <button class="btn btn-outline-success btn-sm" routerLink="/weighment/second">
           <i class="bi bi-clipboard-check me-1"></i>{{ 'dash.ticketList' | translate }} <kbd class="ms-1">F3</kbd>
         </button>
+        <hr class="my-1">
+        <button class="btn btn-warning btn-sm" (click)="zeroScale()" [disabled]="zeroing">
+          @if (zeroing) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          @else { <i class="bi bi-arrow-counterclockwise me-1"></i> }
+          {{ 'dash.zeroScale' | translate }}
+          @if (zeroMsg) { <span class="ms-1 small">({{ zeroMsg }})</span> }
+        </button>
       </div>
 
     </div>

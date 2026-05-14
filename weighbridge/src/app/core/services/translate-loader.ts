@@ -118,6 +118,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     'dash.stable': 'STABLE',
     'dash.motion': 'MOTION',
     'dash.quickActions': 'Quick Actions',
+    'dash.zeroScale': 'Zero Scale',
   },
 
   hi: {
@@ -236,6 +237,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     'dash.stable': 'स्थिर',
     'dash.motion': 'गतिमान',
     'dash.quickActions': 'त्वरित क्रियाएं',
+    'dash.zeroScale': 'स्केल ज़ीरो करें',
   },
 
   gu: {
@@ -354,6 +356,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     'dash.stable': 'સ્થિર',
     'dash.motion': 'ગતિમાન',
     'dash.quickActions': 'ઝડપી ક્રિયાઓ',
+    'dash.zeroScale': 'સ્કેલ ઝીરો કરો',
   },
 };
 

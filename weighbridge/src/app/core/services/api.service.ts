@@ -11,7 +11,8 @@ import {
   TicketDetailsDto, CreateOneGoWeighmentRequest, CreateOneGoWeighmentResult,
   VehicleTypeConfig, UpsertVehicleTypeRequest,
   PrinterSettings, UpsertPrinterSettingsRequest,
-  UpsertClientRequest
+  UpsertClientRequest,
+  IndicatorSettings, UpdateIndicatorSettingsRequest, ScaleHealthResponse, ScaleActionResponse
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -217,6 +218,25 @@ export class ApiService {
   }
   deleteVehicleType(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/admin/vehicletypes/${id}`);
+  }
+
+  // ─── Indicator Settings ───────────────────────────────────────────────────
+  getIndicatorSettings(siteId: number): Observable<IndicatorSettings> {
+    return this.http.get<IndicatorSettings>(`${this.base}/api/admin/indicatorsettings`, { params: { siteId } });
+  }
+  updateIndicatorSettings(req: UpdateIndicatorSettingsRequest): Observable<void> {
+    return this.http.post<void>(`${this.base}/api/admin/indicatorsettings`, req);
+  }
+
+  // ─── Scale Operations ─────────────────────────────────────────────────────
+  zeroScale(): Observable<ScaleActionResponse> {
+    return this.http.post<ScaleActionResponse>(`${this.base}/api/scale/zero`, {});
+  }
+  sendScaleKey(keys: string): Observable<ScaleActionResponse> {
+    return this.http.post<ScaleActionResponse>(`${this.base}/api/scale/key`, { keys });
+  }
+  getScaleHealth(): Observable<ScaleHealthResponse> {
+    return this.http.get<ScaleHealthResponse>(`${this.base}/api/scale/health`);
   }
 
   // ─── Printer Settings ──────────────────────────────────────────────────────
