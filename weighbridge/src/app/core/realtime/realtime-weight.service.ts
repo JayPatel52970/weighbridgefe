@@ -1,5 +1,5 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, HubConnectionState, HttpTransportType, LogLevel } from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../services/auth.service';
@@ -20,36 +20,27 @@ export class RealtimeWeightService implements OnDestroy {
 
   constructor(private auth: AuthService, private zone: NgZone) {
     const hubUrl = `${environment.apiBase}/hubs/weight`;
-    //console.log(`${TAG} Building hub. URL = ${hubUrl}`);
-
-    const token = this.auth.token;
-    //console.log(`${TAG} Token present at build time: ${!!token}`);
 
     this.hub = new HubConnectionBuilder()
       .withUrl(hubUrl, {
-        accessTokenFactory: () => {
-          const t = this.auth.token ?? '';
-          //console.log(`${TAG} accessTokenFactory called — token length: ${t.length}`);
-          return t;
-        }
+        accessTokenFactory: () => this.auth.token ?? '',
+        // Try WebSocket first; if it fails during negotiation, fall back to long polling
+        transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling
       })
       .withAutomaticReconnect([0, 2000, 5000, 10000])
-      .configureLogging(LogLevel.Information)
+      .configureLogging(LogLevel.Warning)
       .build();
 
     this.hub.on('ReceiveWeightUpdate', (reading: WeightReadingDto) => {
-      //console.log(`${TAG} ReceiveWeightUpdate received:`, reading);
       this.zone.run(() => this.weight$.next(reading));
     });
 
-    // Also listen for any other event name in case the backend name differs
     this.hub.onreconnecting(err => {
       console.warn(`${TAG} Reconnecting...`, err);
       this.zone.run(() => this.connectionState$.next('reconnecting'));
     });
 
-    this.hub.onreconnected(async connId => {
-      //console.log(`${TAG} Reconnected. connectionId = ${connId}`);
+    this.hub.onreconnected(async () => {
       this.zone.run(() => this.connectionState$.next('connected'));
       await this.invokeSubscribe();
     });
@@ -61,45 +52,34 @@ export class RealtimeWeightService implements OnDestroy {
         this._started = false;
       });
       if (this.isAuthError(err)) {
-        console.error(`${TAG} Auth error on close — logging out`);
         this.zone.run(() => this.auth.logout(false));
       }
     });
-
-    //console.log(`${TAG} Hub built. Hub state: ${this.hub.state}`);
   }
 
   async start(siteId = 1): Promise<void> {
     this.siteId = siteId;
-    //console.log(`${TAG} start() called. siteId=${siteId}, _started=${this._started}, hub.state=${this.hub.state}`);
-
-    if (this._started || this.hub.state === HubConnectionState.Connected) {
-      //console.log(`${TAG} start() skipped — already started or connected`);
-      return;
-    }
+    if (this._started || this.hub.state === HubConnectionState.Connected) return;
 
     this._started = true;
     this.zone.run(() => this.connectionState$.next('connecting'));
 
     try {
-      //console.log(`${TAG} Calling hub.start()...`);
       await this.hub.start();
-      //console.log(`${TAG} hub.start() succeeded. Hub state: ${this.hub.state}`);
+      console.log(`${TAG} Connected via ${(this.hub as any).connection?.transport?.name ?? 'unknown transport'}`);
       this.zone.run(() => this.connectionState$.next('connected'));
       await this.invokeSubscribe();
     } catch (err: any) {
-      console.error(`${TAG} hub.start() FAILED:`, err);
+      console.error(`${TAG} hub.start() failed:`, err);
       this._started = false;
       this.zone.run(() => this.connectionState$.next('disconnected'));
       if (this.isAuthError(err)) {
-        console.error(`${TAG} Treating as auth error — logging out`);
         this.zone.run(() => this.auth.logout(false));
       }
     }
   }
 
   async stop(): Promise<void> {
-    //console.log(`${TAG} stop() called. Hub state: ${this.hub.state}`);
     this._started = false;
     if (this.hub.state !== HubConnectionState.Disconnected) {
       await this.hub.stop();
@@ -108,11 +88,9 @@ export class RealtimeWeightService implements OnDestroy {
 
   private async invokeSubscribe(): Promise<void> {
     try {
-      //console.log(`${TAG} Invoking Subscribe with siteId=${this.siteId}`);
       await this.hub.invoke('Subscribe', this.siteId);
-      //console.log(`${TAG} Subscribe invoked successfully`);
     } catch (err) {
-      console.warn(`${TAG} Subscribe invoke failed (may be optional):`, err);
+      console.warn(`${TAG} Subscribe invoke failed:`, err);
     }
   }
 
