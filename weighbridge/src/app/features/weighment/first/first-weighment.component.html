@@ -1,4 +1,4 @@
-<div class="mb-3 d-flex align-items-center justify-content-between no-print">
+﻿<div class="mb-3 d-flex align-items-center justify-content-between no-print">
   <div>
     <h1 class="h4 mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>{{ 'page.firstWeighment' | translate }}</h1>
   </div>
@@ -27,7 +27,7 @@
                   [class]="firstWeighType === FirstWeighType.Tare ? 'btn-primary' : 'btn-outline-secondary'"
                   (click)="setWeighType(FirstWeighType.Tare)">{{ 'btn.tare' | translate }}</button>
               </div>
-              <input id="fld-firstWeightKg" type="number" class="form-control mt-2" min="0" step="any"
+              <input id="fld-firstWeightKg" type="number" class="form-control mt-2" min="0" step="any" autocomplete="off"
                 [placeholder]="manualMode ? 'Enter weight manually (kg)' : 'Live scale auto-fills · or type manually'"
                 [(ngModel)]="firstWeightKg"
                 (keydown)="onFirstWeightKey($event)">
@@ -134,7 +134,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.charges' | translate }}</div>
             @if (isActive('charges')) {
-              <input id="fld-charges" type="number" class="form-control mt-2" min="0"
+              <input id="fld-charges" type="number" class="form-control mt-2" min="0" autocomplete="off"
                 [(ngModel)]="charges"
                 (keydown.enter)="onChargesEnter()"
                 (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
@@ -186,7 +186,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.amountPaid' | translate }}</div>
             @if (isActive('paymentAmount')) {
-              <input id="fld-paymentAmount" type="number" class="form-control mt-2" min="0"
+              <input id="fld-paymentAmount" type="number" class="form-control mt-2" min="0" autocomplete="off"
                 [(ngModel)]="paymentAmount"
                 (keydown.enter)="advance('paymentAmount')"
                 (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
@@ -279,7 +279,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.driverName' | translate }} <span class="text-muted fw-normal">{{ 'lbl.optional' | translate }}</span></div>
             @if (isActive('driverName')) {
-              <input id="fld-driverName" type="text" class="form-control mt-2"
+              <input id="fld-driverName" type="text" class="form-control mt-2" autocomplete="off"
                 placeholder="Driver name or Enter to skip"
                 [(ngModel)]="driverName"
                 (keydown.enter)="advance('driverName')"

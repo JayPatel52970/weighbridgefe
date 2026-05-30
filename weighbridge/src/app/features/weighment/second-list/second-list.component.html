@@ -1,4 +1,4 @@
-<div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
+﻿<div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
   <h1 class="h3 mb-0">
     <i class="bi bi-clipboard-check me-2 text-success"></i>{{ 'page.secondWeighment' | translate }}
     <small class="text-muted ms-2 fs-6">{{ 'lbl.pendingTickets' | translate }}</small>
@@ -13,7 +13,7 @@
       <div class="col-md-6">
         <div class="input-group">
           <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input id="search-input" type="text" class="form-control"
+          <input id="search-input" type="text" class="form-control" autocomplete="off"
                  placeholder="Search vehicle, ticket #, serial…"
                  [value]="search"
                  (input)="onSearch($any($event.target).value)"

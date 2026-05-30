@@ -1,4 +1,4 @@
-<div class="mb-3 d-flex align-items-center justify-content-between no-print">
+﻿<div class="mb-3 d-flex align-items-center justify-content-between no-print">
   <h1 class="h4 mb-0"><i class="bi bi-printer me-2 text-success"></i>{{ 'page.printDuplicate' | translate }} <span class="badge bg-warning text-dark ms-1">F4</span></h1>
   <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F1</kbd> First &nbsp;<kbd>F2</kbd> Direct &nbsp;<kbd>F3</kbd> Ticket List &nbsp;<kbd>Ctrl+P</kbd> Print</small>
 </div>
@@ -17,7 +17,7 @@
             <div class="step-lbl">{{ 'lbl.ticketNumber' | translate }} <span class="text-danger">*</span></div>
             @if (isActive('ticketNumber')) {
               <div class="d-flex gap-2 mt-2">
-                <input id="fld-pd-ticketNumber" type="text" class="form-control text-uppercase"
+                <input id="fld-pd-ticketNumber" type="text" class="form-control text-uppercase" autocomplete="off"
                   placeholder="e.g. WB-0042"
                   [(ngModel)]="ticketSearch"
                   (keydown)="onTicketNumberKey($event)"

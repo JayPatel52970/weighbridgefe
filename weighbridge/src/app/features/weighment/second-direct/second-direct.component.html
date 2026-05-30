@@ -1,4 +1,4 @@
-<div class="mb-3 d-flex align-items-center justify-content-between no-print">
+﻿<div class="mb-3 d-flex align-items-center justify-content-between no-print">
   <h1 class="h4 mb-0"><i class="bi bi-lightning-charge me-2 text-success"></i>{{ 'page.directComplete' | translate }} <span class="badge bg-info ms-1">F2</span></h1>
   <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F3</kbd> Ticket List &nbsp;<kbd>F4</kbd> Print Duplicate &nbsp;<kbd>Ctrl+P</kbd> Print</small>
 </div>
@@ -53,7 +53,7 @@
             <div class="step-lbl">{{ 'lbl.ticketNumber' | translate }} <span class="text-danger">*</span></div>
             @if (isActive('ticketNumber')) {
               <div class="d-flex gap-2 mt-2">
-                <input id="fld-d-ticketNumber" type="text" class="form-control text-uppercase"
+                <input id="fld-d-ticketNumber" type="text" class="form-control text-uppercase" autocomplete="off"
                   placeholder="e.g. WB-0042"
                   [(ngModel)]="ticketSearch"
                   (keydown)="onTicketNumberKey($event)"
@@ -86,7 +86,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.secondWeight' | translate }} <span class="text-danger">*</span></div>
             @if (isActive('secondWeight')) {
-              <input id="fld-d-secondWeight" type="number" class="form-control mt-2" min="1"
+              <input id="fld-d-secondWeight" type="number" class="form-control mt-2" min="1" autocomplete="off"
                 [placeholder]="manualMode ? 'Enter weight manually (kg)' : 'Live scale auto-fills · or type manually'"
                 [(ngModel)]="secondWeight"
                 (keydown)="onSecondWeightKey($event)">
@@ -116,7 +116,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.charges' | translate }}</div>
             @if (isActive('charges')) {
-              <input id="fld-d-charges" type="number" class="form-control mt-2" min="0"
+              <input id="fld-d-charges" type="number" class="form-control mt-2" min="0" autocomplete="off"
                 [(ngModel)]="totalCharges"
                 (keydown.enter)="onChargesEnter()"
                 (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
@@ -168,7 +168,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.amountPaid' | translate }}</div>
             @if (isActive('paymentAmount')) {
-              <input id="fld-d-paymentAmount" type="number" class="form-control mt-2" min="0"
+              <input id="fld-d-paymentAmount" type="number" class="form-control mt-2" min="0" autocomplete="off"
                 [(ngModel)]="amountPaid"
                 (keydown.enter)="advance('paymentAmount')"
                 (keydown.arrowdown)="$event.preventDefault(); navigateDown()"

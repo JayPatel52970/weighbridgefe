@@ -1,4 +1,4 @@
-<div class="mb-3 d-flex align-items-center justify-content-between no-print">
+﻿<div class="mb-3 d-flex align-items-center justify-content-between no-print">
   <h1 class="h4 mb-0"><i class="bi bi-arrow-left-right me-2 text-primary"></i>{{ 'page.oneGoWeighment' | translate }} <span class="badge bg-primary ms-1">F5</span></h1>
   <small class="text-muted"><kbd>Esc</kbd> Dashboard &nbsp;<kbd>F1</kbd> New Weighment &nbsp;<kbd>F2</kbd> Direct &nbsp;<kbd>F3</kbd> Ticket List &nbsp;<kbd>F4</kbd> Print Dup &nbsp;<kbd>Ctrl+P</kbd> Print</small>
 </div>
@@ -58,7 +58,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.grossWeight' | translate }} <span class="text-danger">*</span></div>
             @if (isActive('grossWeight')) {
-              <input id="fld-og-grossWeight" type="number" class="form-control mt-2" min="1"
+              <input id="fld-og-grossWeight" type="number" class="form-control mt-2" min="1" autocomplete="off"
                 placeholder="Live scale auto-fills · or type manually"
                 [(ngModel)]="grossWeight"
                 (keydown)="onGrossWeightKey($event)">
@@ -81,7 +81,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.tareWeight' | translate }} <span class="text-danger">*</span></div>
             @if (isActive('tareWeight')) {
-              <input id="fld-og-tareWeight" type="number" class="form-control mt-2" min="0"
+              <input id="fld-og-tareWeight" type="number" class="form-control mt-2" min="0" autocomplete="off"
                 placeholder="Enter driver's known tare weight"
                 [(ngModel)]="tareWeight"
                 (keydown)="onTareWeightKey($event)">
@@ -104,7 +104,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.charges' | translate }}</div>
             @if (isActive('charges')) {
-              <input id="fld-og-charges" type="number" class="form-control mt-2" min="0"
+              <input id="fld-og-charges" type="number" class="form-control mt-2" min="0" autocomplete="off"
                 placeholder="0 = auto-compute from backend"
                 [(ngModel)]="totalCharges"
                 (keydown.enter)="onChargesEnter()"
@@ -157,7 +157,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.amountPaid' | translate }}</div>
             @if (isActive('paymentAmount')) {
-              <input id="fld-og-paymentAmount" type="number" class="form-control mt-2" min="0"
+              <input id="fld-og-paymentAmount" type="number" class="form-control mt-2" min="0" autocomplete="off"
                 [(ngModel)]="paymentAmount"
                 (keydown.enter)="advance('paymentAmount')"
                 (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
@@ -250,7 +250,7 @@
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.driverName' | translate }} <span class="text-muted fw-normal">{{ 'lbl.optional' | translate }}</span></div>
             @if (isActive('driverName')) {
-              <input id="fld-og-driverName" type="text" class="form-control mt-2"
+              <input id="fld-og-driverName" type="text" class="form-control mt-2" autocomplete="off"
                 placeholder="Driver name or Enter to skip"
                 [(ngModel)]="driverName"
                 (keydown.enter)="advance('driverName')"
