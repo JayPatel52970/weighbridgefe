@@ -32,3 +32,7 @@
     <span class="float-end d-none d-sm-inline text-muted">v1.0</span>
   </footer>
 </div>
+
+@if (showTicketLookup) {
+  <app-ticket-lookup (closed)="showTicketLookup = false"></app-ticket-lookup>
+}

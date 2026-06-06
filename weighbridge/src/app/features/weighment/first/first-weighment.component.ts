@@ -8,10 +8,10 @@ import { RealtimeWeightService, ConnectionState } from '../../../core/realtime/r
 import {
   Vehicle, Client, Material, VehicleTypeConfig,
   FirstWeighmentRequest, FirstWeighmentResponse,
-  FirstWeighType, PaymentMode, WeightReadingDto
+  FirstWeighType, PaymentMode, WeightReadingDto, Operator
 } from '../../../core/models';
 
-type Step = 'weighType' | 'vehicle' | 'vehicleType' | 'charges' | 'paymentMode' | 'paymentAmount' | 'material' | 'client' | 'driverName' | 'confirm';
+type Step = 'weighType' | 'vehicle' | 'vehicleType' | 'charges' | 'paymentMode' | 'paymentAmount' | 'material' | 'client' | 'operator' | 'driverName' | 'confirm';
 
 @Component({
   selector: 'app-first-weighment',
@@ -51,7 +51,7 @@ type Step = 'weighType' | 'vehicle' | 'vehicleType' | 'charges' | 'paymentMode' 
   `]
 })
 export class FirstWeighmentComponent implements OnInit, OnDestroy {
-  readonly steps: Step[] = ['weighType', 'vehicle', 'vehicleType', 'charges', 'paymentMode', 'paymentAmount', 'material', 'client', 'driverName', 'confirm'];
+  readonly steps: Step[] = ['weighType', 'vehicle', 'vehicleType', 'charges', 'paymentMode', 'paymentAmount', 'material', 'client', 'operator', 'driverName', 'confirm'];
   currentStepIndex = 0;
   fieldErrors: Partial<Record<Step, string>> = {};
 
@@ -84,10 +84,16 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
 
   driverName = '';
 
+  operators: Operator[] = [];
+  selectedOperatorId: string | null = null;
+  operatorSearch = '';
+  operatorSuggestions: Operator[] = [];
+  operatorHighlight = -1;
+
   liveWeight: WeightReadingDto | null = null;
   weightState: ConnectionState = 'disconnected';
   captureVehicleImage = true;
-  captureOperatorImage = false;
+  captureOperatorImage = true;
 
   saving = false;
   error = '';
@@ -152,6 +158,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     } });
     this.api.listClients(0, 2000).subscribe({ next: r => { this.allClients = r; this.cdr.markForCheck(); } });
+    this.api.listOperators(this.siteId).subscribe({ next: r => { this.operators = r; this.cdr.markForCheck(); } });
     this.subs.add(
       this.realtimeWeight.weight$.subscribe(w => {
         this.liveWeight = w;
@@ -229,6 +236,10 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       this.clientHighlight = Math.min(this.clientHighlight + 1, this.clientSuggestions.length - 1);
       this.cdr.markForCheck(); return;
     }
+    if (this.operatorSuggestions.length) {
+      this.operatorHighlight = Math.min(this.operatorHighlight + 1, this.operatorSuggestions.length - 1);
+      this.cdr.markForCheck(); return;
+    }
     this.advance(this.currentStep);
   }
 
@@ -243,6 +254,10 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     }
     if (this.clientSuggestions.length) {
       this.clientHighlight = Math.max(this.clientHighlight - 1, -1);
+      this.cdr.markForCheck(); return;
+    }
+    if (this.operatorSuggestions.length) {
+      this.operatorHighlight = Math.max(this.operatorHighlight - 1, -1);
       this.cdr.markForCheck(); return;
     }
     if (this.currentStepIndex > 0) {
@@ -405,6 +420,11 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
     this.advance('material');
   }
 
+  onClientFocus(): void {
+    this.clientSuggestions = this.allClients.slice(0, 20);
+    this.cdr.markForCheck();
+  }
+
   onClientInput(val: string): void {
     this.clientSearch = val;
     this.clientHighlight = -1;
@@ -414,7 +434,7 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       ? this.allClients.filter(c =>
           c.name.toLowerCase().includes(q) ||
           (c.phoneNumber ?? '').toLowerCase().includes(q)).slice(0, 10)
-      : [];
+      : this.allClients.slice(0, 20);
     this.cdr.markForCheck();
   }
 
@@ -433,6 +453,39 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       return;
     }
     this.advance('client');
+  }
+
+  onOperatorFocus(): void {
+    this.operatorSuggestions = this.operators;
+    this.cdr.markForCheck();
+  }
+
+  onOperatorInput(val: string): void {
+    this.operatorSearch = val;
+    this.operatorHighlight = -1;
+    this.selectedOperatorId = null;
+    const q = val.trim().toLowerCase();
+    this.operatorSuggestions = q.length >= 1
+      ? this.operators.filter(o => o.name.toLowerCase().includes(q))
+      : this.operators;
+    this.cdr.markForCheck();
+  }
+
+  selectOperator(o: Operator): void {
+    this.selectedOperatorId = o.id;
+    this.operatorSearch = o.name;
+    this.operatorSuggestions = [];
+    this.operatorHighlight = -1;
+    this.advance('operator');
+  }
+
+  onOperatorEnter(): void {
+    if (this.operatorSuggestions.length > 0) {
+      const idx = this.operatorHighlight >= 0 ? this.operatorHighlight : 0;
+      this.selectOperator(this.operatorSuggestions[idx]);
+      return;
+    }
+    this.advance('operator');
   }
 
   // ─── Save & Print ─────────────────────────────────────────────────────────────
@@ -455,7 +508,8 @@ export class FirstWeighmentComponent implements OnInit, OnDestroy {
       amountPaid: this.paymentAmount,
       paymentMode: this.paymentMode,
       captureVehicleImage: this.captureVehicleImage,
-      captureOperatorImage: this.captureOperatorImage
+      captureOperatorImage: this.captureOperatorImage,
+      firstWeightOperatorId: this.selectedOperatorId || null
     };
 
     this.api.firstWeighment(req)

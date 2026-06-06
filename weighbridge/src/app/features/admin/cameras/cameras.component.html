@@ -21,39 +21,49 @@
         <div class="col-md-3">
           <label class="form-label">Protocol</label>
           <select class="form-select" [(ngModel)]="editCamera.protocol">
-            <option [value]="CameraProtocol.HttpSnapshot">HTTP Snapshot</option>
-            <option [value]="CameraProtocol.RtspSnapshot">RTSP Snapshot (not implemented)</option>
+            <option [value]="CameraProtocol.HttpPoll">HTTP Snapshot</option>
+            <option [value]="CameraProtocol.Rtsp">RTSP Stream</option>
+            <option [value]="CameraProtocol.FtpPush">FTP Push</option>
+            <option [value]="CameraProtocol.UsbCapture">USB Camera</option>
           </select>
         </div>
         <div class="col-md-2">
           <label class="form-label">Enabled</label>
           <div class="form-check form-switch mt-2">
-            <input type="checkbox" class="form-check-input" id="camEnabled" [(ngModel)]="editCamera.enabled">
+            <input type="checkbox" class="form-check-input" id="camEnabled" [(ngModel)]="editCamera.isEnabled">
             <label class="form-check-label" for="camEnabled">Active</label>
           </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Camera URL</label>
-          <input type="text" class="form-control" placeholder="http://192.168.1.10/"
+          <label class="form-label">
+            @if (isUsb()) { Device Path } @else { Camera URL }
+          </label>
+          <input type="text" class="form-control"
+                 [placeholder]="isUsb() ? 'e.g. /dev/video0 (Linux) or 0 (Windows)' : 'http://192.168.1.10/'"
                  [(ngModel)]="editCamera.url">
+          @if (isUsb()) {
+            <div class="form-text">Linux: <code>/dev/video0</code> · Windows: <code>0</code>, <code>1</code>, …</div>
+          }
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Username</label>
-          <input type="text" class="form-control" [(ngModel)]="editCamera.username">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control" [(ngModel)]="editCamera.password">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Snapshot Path</label>
-          <input type="text" class="form-control" placeholder="/snapshot.jpg"
-                 [(ngModel)]="editCamera.snapshotPath">
-        </div>
-        <div class="col-md-1">
-          <label class="form-label">Timeout (s)</label>
-          <input type="number" class="form-control" [(ngModel)]="editCamera.timeoutSeconds" min="1">
-        </div>
+        @if (!isUsb()) {
+          <div class="col-md-3">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-control" [(ngModel)]="editCamera.username">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" [(ngModel)]="editCamera.password">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Snapshot Path</label>
+            <input type="text" class="form-control" placeholder="/snapshot.jpg"
+                   [(ngModel)]="editCamera.snapshotPath">
+          </div>
+          <div class="col-md-1">
+            <label class="form-label">Timeout (s)</label>
+            <input type="number" class="form-control" [(ngModel)]="editCamera.timeoutSeconds" min="1">
+          </div>
+        }
         <div class="col-md-2">
           <label class="form-label">Storage Folder</label>
           <input type="text" class="form-control" [(ngModel)]="editCamera.storageFolder">
@@ -81,11 +91,11 @@
             <tr>
               <td>{{ c.kind === CameraKind.Vehicle ? 'Vehicle' : 'Operator' }}</td>
               <td>{{ c.url || '—' }}</td>
-              <td>{{ c.protocol === CameraProtocol.HttpSnapshot ? 'HTTP' : 'RTSP' }}</td>
-              <td>{{ c.timeoutSeconds }}s</td>
+              <td>{{ c.protocol === CameraProtocol.UsbCapture ? 'USB' : c.protocol === CameraProtocol.Rtsp ? 'RTSP' : c.protocol === CameraProtocol.FtpPush ? 'FTP' : 'HTTP' }}</td>
+              <td>{{ c.protocol === CameraProtocol.UsbCapture ? '—' : (c.timeoutSeconds + 's') }}</td>
               <td>
-                <span class="badge" [class.bg-success]="c.enabled" [class.bg-secondary]="!c.enabled">
-                  {{ c.enabled ? 'Enabled' : 'Disabled' }}
+                <span class="badge" [class.bg-success]="c.isEnabled" [class.bg-secondary]="!c.isEnabled">
+                  {{ c.isEnabled ? 'Enabled' : 'Disabled' }}
                 </span>
               </td>
               <td>

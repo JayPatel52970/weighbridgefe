@@ -219,6 +219,7 @@
                 <input id="fld-og-client" type="text" class="form-control" autocomplete="off"
                   placeholder="Search or skip with Enter"
                   [value]="clientSearch"
+                  (focus)="onClientFocus()"
                   (input)="onClientInput($any($event.target).value)"
                   (keydown.enter)="onClientEnter()"
                   (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
@@ -243,10 +244,46 @@
         </div>
         <hr class="m-0">
 
-        <!-- 9 · Driver Name -->
+        <!-- 9 · Operator -->
+        <div class="step-row" [class.active]="isActive('operator')" [class.done]="isDone('operator')"
+             (click)="isDone('operator') && goBack(8)">
+          <div class="step-num">{{ isDone('operator') ? '✓' : '9' }}</div>
+          <div class="step-body">
+            <div class="step-lbl">Operator <span class="text-muted fw-normal">{{ 'lbl.optional' | translate }}</span></div>
+            @if (isActive('operator')) {
+              <div class="position-relative mt-2">
+                <input id="fld-og-operator" type="text" class="form-control" autocomplete="off"
+                  placeholder="Select operator or skip with Enter"
+                  [value]="operatorSearch"
+                  (focus)="onOperatorFocus()"
+                  (input)="onOperatorInput($any($event.target).value)"
+                  (keydown.enter)="onOperatorEnter()"
+                  (keydown.arrowdown)="$event.preventDefault(); navigateDown()"
+                  (keydown.arrowup)="$event.preventDefault(); navigateUp()">
+                @if (operatorSuggestions.length) {
+                  <div class="list-group position-absolute w-100 shadow" style="z-index:200;top:100%;max-height:180px;overflow-y:auto">
+                    @for (op of operatorSuggestions; track op.id; let i = $index) {
+                      <button type="button" class="list-group-item list-group-item-action py-2"
+                        [class.active]="operatorHighlight === i"
+                        (click)="selectOperator(op)">{{ op.name }}</button>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="step-val">{{ operatorSearch || '—' }}</div>
+            }
+          </div>
+          @if (isActive('operator')) {
+            <button type="button" class="step-next-btn" tabindex="-1" (click)="onOperatorEnter()" title="Next step"><i class="bi bi-chevron-right"></i></button>
+          }
+        </div>
+        <hr class="m-0">
+
+        <!-- 10 · Driver Name -->
         <div class="step-row" [class.active]="isActive('driverName')" [class.done]="isDone('driverName')"
-             (click)="isDone('driverName') && goBack(8)">
-          <div class="step-num">{{ isDone('driverName') ? '✓' : '9' }}</div>
+             (click)="isDone('driverName') && goBack(9)">
+          <div class="step-num">{{ isDone('driverName') ? '✓' : '10' }}</div>
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.driverName' | translate }} <span class="text-muted fw-normal">{{ 'lbl.optional' | translate }}</span></div>
             @if (isActive('driverName')) {
@@ -266,9 +303,9 @@
         </div>
         <hr class="m-0">
 
-        <!-- 10 · Confirm -->
+        <!-- 11 · Confirm -->
         <div class="step-row" [class.active]="isActive('confirm')">
-          <div class="step-num">10</div>
+          <div class="step-num">11</div>
           <div class="step-body">
             <div class="step-lbl">{{ 'lbl.confirmComplete' | translate }}</div>
             @if (isActive('confirm')) {

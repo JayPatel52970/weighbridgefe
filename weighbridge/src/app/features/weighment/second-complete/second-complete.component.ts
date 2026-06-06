@@ -5,9 +5,9 @@ import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
 import { KeyboardService } from '../../../core/services/keyboard.service';
 import { RealtimeWeightService, ConnectionState } from '../../../core/realtime/realtime-weight.service';
-import { PendingTicket, SecondWeighmentResponse, PaymentMode, WeightReadingDto } from '../../../core/models';
+import { PendingTicket, SecondWeighmentResponse, PaymentMode, WeightReadingDto, Operator } from '../../../core/models';
 
-type Step = 'secondWeight' | 'charges' | 'paymentMode' | 'paymentAmount' | 'confirm';
+type Step = 'secondWeight' | 'charges' | 'paymentMode' | 'paymentAmount' | 'operator' | 'confirm';
 
 @Component({
   selector: 'app-second-complete',
@@ -50,7 +50,7 @@ type Step = 'secondWeight' | 'charges' | 'paymentMode' | 'paymentAmount' | 'conf
   `]
 })
 export class SecondCompleteComponent implements OnInit, OnDestroy {
-  readonly steps: Step[] = ['secondWeight', 'charges', 'paymentMode', 'paymentAmount', 'confirm'];
+  readonly steps: Step[] = ['secondWeight', 'charges', 'paymentMode', 'paymentAmount', 'operator', 'confirm'];
   currentStepIndex = 0;
   fieldErrors: Partial<Record<Step, string>> = {};
 
@@ -65,8 +65,14 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
   amountPaid = 0;
 
   captureVehicleImage = true;
-  captureOperatorImage = false;
+  captureOperatorImage = true;
   printRequested = true;
+
+  operators: Operator[] = [];
+  selectedOperatorId: string | null = null;
+  operatorSearch = '';
+  operatorSuggestions: Operator[] = [];
+  operatorHighlight = -1;
 
   saving = false;
   error = '';
@@ -123,6 +129,7 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.ticketId = this.route.snapshot.params['id'];
     this.loadTicket();
+    this.api.listOperators(this.siteId).subscribe({ next: r => { this.operators = r; this.cdr.markForCheck(); } });
     this.subs.add(
       this.realtimeWeight.weight$.subscribe(w => {
         this.liveWeight = w;
@@ -135,7 +142,7 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
     );
     this.subs.add(
       this.kb.shortcuts$.subscribe(key => {
-        if (key === 'Escape') this.router.navigate(['/weighment/second']);
+        if (key === 'Escape') this.router.navigate(['/dashboard']);
         if (key === 'F4') this.router.navigate(['/weighment/print-duplicate']);
         if (key === 'CtrlP' && this.result?.printAllowed) this.doPrint();
       })
@@ -170,9 +177,21 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
     }
   }
 
-  navigateDown(): void { this.advance(this.currentStep); }
+  navigateDown(): void {
+    if (this.isActive('operator') && this.operatorSuggestions.length > 0) {
+      this.operatorHighlight = Math.min(this.operatorHighlight + 1, this.operatorSuggestions.length - 1);
+      this.cdr.markForCheck();
+      return;
+    }
+    this.advance(this.currentStep);
+  }
 
   navigateUp(): void {
+    if (this.isActive('operator') && this.operatorHighlight >= 0) {
+      this.operatorHighlight--;
+      this.cdr.markForCheck();
+      return;
+    }
     if (this.currentStepIndex > 0) {
       this.currentStepIndex--;
       this.focusStep(this.currentStep);
@@ -236,6 +255,41 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
     return m === PaymentMode.Cash ? 'btn.cash' : m === PaymentMode.Online ? 'btn.online' : 'btn.credit';
   }
 
+  // ─── Operator ─────────────────────────────────────────────────────────────────
+
+  onOperatorFocus(): void {
+    this.operatorSuggestions = this.operators;
+    this.cdr.markForCheck();
+  }
+
+  onOperatorInput(val: string): void {
+    this.operatorSearch = val;
+    this.operatorHighlight = -1;
+    this.selectedOperatorId = null;
+    const q = val.trim().toLowerCase();
+    this.operatorSuggestions = q.length >= 1
+      ? this.operators.filter(o => o.name.toLowerCase().includes(q))
+      : this.operators;
+    this.cdr.markForCheck();
+  }
+
+  selectOperator(o: Operator): void {
+    this.selectedOperatorId = o.id;
+    this.operatorSearch = o.name;
+    this.operatorSuggestions = [];
+    this.operatorHighlight = -1;
+    this.advance('operator');
+  }
+
+  onOperatorEnter(): void {
+    if (this.operatorSuggestions.length > 0) {
+      const idx = this.operatorHighlight >= 0 ? this.operatorHighlight : 0;
+      this.selectOperator(this.operatorSuggestions[idx]);
+      return;
+    }
+    this.advance('operator');
+  }
+
   // ─── Save & Print ─────────────────────────────────────────────────────────────
 
   save(): void {
@@ -252,7 +306,8 @@ export class SecondCompleteComponent implements OnInit, OnDestroy {
       amountPaid: this.amountPaid,
       captureVehicleImage: this.captureVehicleImage,
       captureOperatorImage: this.captureOperatorImage,
-      printRequested: this.printRequested
+      printRequested: this.printRequested,
+      secondWeightOperatorId: this.selectedOperatorId || null
     }).pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: res => {

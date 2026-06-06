@@ -7,9 +7,9 @@ import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { KeyboardService } from '../../../core/services/keyboard.service';
 import { RealtimeWeightService, ConnectionState } from '../../../core/realtime/realtime-weight.service';
-import { TicketDetailsDto, SecondWeighmentResponse, PaymentMode, WeightReadingDto, WeighmentStatus } from '../../../core/models';
+import { TicketDetailsDto, SecondWeighmentResponse, PaymentMode, WeightReadingDto, WeighmentStatus, Operator } from '../../../core/models';
 
-type Step = 'ticketNumber' | 'secondWeight' | 'charges' | 'paymentMode' | 'paymentAmount' | 'confirm';
+type Step = 'ticketNumber' | 'secondWeight' | 'charges' | 'paymentMode' | 'paymentAmount' | 'operator' | 'confirm';
 
 @Component({
   selector: 'app-second-direct',
@@ -52,7 +52,7 @@ type Step = 'ticketNumber' | 'secondWeight' | 'charges' | 'paymentMode' | 'payme
   `]
 })
 export class SecondDirectComponent implements OnInit, OnDestroy {
-  readonly steps: Step[] = ['ticketNumber', 'secondWeight', 'charges', 'paymentMode', 'paymentAmount', 'confirm'];
+  readonly steps: Step[] = ['ticketNumber', 'secondWeight', 'charges', 'paymentMode', 'paymentAmount', 'operator', 'confirm'];
   currentStepIndex = 0;
   fieldErrors: Partial<Record<Step, string>> = {};
 
@@ -68,8 +68,14 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
   amountPaid = 0;
 
   captureVehicleImage = true;
-  captureOperatorImage = false;
+  captureOperatorImage = true;
   printRequested = true;
+
+  operators: Operator[] = [];
+  selectedOperatorId: string | null = null;
+  operatorSearch = '';
+  operatorSuggestions: Operator[] = [];
+  operatorHighlight = -1;
 
   saving = false;
   error = '';
@@ -125,6 +131,7 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.api.listOperators(1).subscribe({ next: r => { this.operators = r; this.cdr.markForCheck(); } });
     this.subs.add(
       this.realtimeWeight.weight$.subscribe(w => {
         this.liveWeight = w;
@@ -175,9 +182,21 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
     }
   }
 
-  navigateDown(): void { this.advance(this.currentStep); }
+  navigateDown(): void {
+    if (this.isActive('operator') && this.operatorSuggestions.length > 0) {
+      this.operatorHighlight = Math.min(this.operatorHighlight + 1, this.operatorSuggestions.length - 1);
+      this.cdr.markForCheck();
+      return;
+    }
+    this.advance(this.currentStep);
+  }
 
   navigateUp(): void {
+    if (this.isActive('operator') && this.operatorHighlight >= 0) {
+      this.operatorHighlight--;
+      this.cdr.markForCheck();
+      return;
+    }
     if (this.currentStepIndex > 0) {
       this.currentStepIndex--;
       this.focusStep(this.currentStep);
@@ -280,6 +299,39 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
     return m === PaymentMode.Cash ? 'btn.cash' : m === PaymentMode.Online ? 'btn.online' : 'btn.credit';
   }
 
+  onOperatorFocus(): void {
+    this.operatorSuggestions = this.operators;
+    this.cdr.markForCheck();
+  }
+
+  onOperatorInput(val: string): void {
+    this.operatorSearch = val;
+    this.operatorHighlight = -1;
+    this.selectedOperatorId = null;
+    const q = val.trim().toLowerCase();
+    this.operatorSuggestions = q.length >= 1
+      ? this.operators.filter(o => o.name.toLowerCase().includes(q))
+      : this.operators;
+    this.cdr.markForCheck();
+  }
+
+  selectOperator(o: Operator): void {
+    this.selectedOperatorId = o.id;
+    this.operatorSearch = o.name;
+    this.operatorSuggestions = [];
+    this.operatorHighlight = -1;
+    this.advance('operator');
+  }
+
+  onOperatorEnter(): void {
+    if (this.operatorSuggestions.length > 0) {
+      const idx = this.operatorHighlight >= 0 ? this.operatorHighlight : 0;
+      this.selectOperator(this.operatorSuggestions[idx]);
+      return;
+    }
+    this.advance('operator');
+  }
+
   // ─── Save & Print ─────────────────────────────────────────────────────────────
 
   save(): void {
@@ -296,7 +348,8 @@ export class SecondDirectComponent implements OnInit, OnDestroy {
       amountPaid: this.amountPaid,
       captureVehicleImage: this.captureVehicleImage,
       captureOperatorImage: this.captureOperatorImage,
-      printRequested: this.printRequested
+      printRequested: this.printRequested,
+      secondWeightOperatorId: this.selectedOperatorId || null
     }).pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: res => {

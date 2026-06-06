@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { KeyboardService } from '../../core/services/keyboard.service';
 
 @Component({
   selector: 'app-shell',
@@ -13,11 +14,12 @@ export class ShellComponent implements OnInit, OnDestroy {
   isWeighmentRoute = false;
   weighmentTitle = '';
   weighmentIcon = '';
+  showTicketLookup = false;
 
   private previousRoute = '/dashboard';
   private sub = new Subscription();
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private kb: KeyboardService) {}
 
   ngOnInit(): void {
     this.applyUrl(this.router.url);
@@ -25,6 +27,16 @@ export class ShellComponent implements OnInit, OnDestroy {
       this.router.events
         .pipe(filter(e => e instanceof NavigationEnd))
         .subscribe((e: NavigationEnd) => this.applyUrl(e.urlAfterRedirects))
+    );
+    this.sub.add(
+      this.kb.shortcuts$.subscribe(key => {
+        if (key === 'F7') {
+          this.showTicketLookup = !this.showTicketLookup;
+        }
+        if (key === 'Escape' && !this.isWeighmentRoute && !this.showTicketLookup) {
+          this.router.navigate(['/dashboard']);
+        }
+      })
     );
   }
 

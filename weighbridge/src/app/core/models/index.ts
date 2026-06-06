@@ -12,13 +12,15 @@ export enum PaymentMode {
 }
 
 export enum CameraKind {
-  Vehicle = 1,
-  Operator = 2
+  Vehicle = 0,
+  Operator = 1
 }
 
 export enum CameraProtocol {
-  HttpSnapshot = 1,
-  RtspSnapshot = 2
+  HttpPoll = 0,
+  Rtsp = 1,
+  FtpPush = 2,
+  UsbCapture = 3
 }
 
 export enum ChargeSuggestionBasis {
@@ -135,6 +137,7 @@ export interface FirstWeighmentRequest {
   paymentMode: PaymentMode;
   captureVehicleImage: boolean;
   captureOperatorImage: boolean;
+  firstWeightOperatorId?: string | null;
 }
 
 export interface FirstWeighmentResponse {
@@ -167,6 +170,7 @@ export interface SecondWeighmentRequest {
   captureVehicleImage: boolean;
   captureOperatorImage: boolean;
   printRequested: boolean;
+  secondWeightOperatorId?: string | null;
 }
 
 export interface SecondWeighmentResponse {
@@ -235,7 +239,7 @@ export interface CameraSettings {
   id?: string;
   siteId: number;
   kind: CameraKind;
-  enabled: boolean;
+  isEnabled: boolean;
   protocol: CameraProtocol;
   url?: string;
   username?: string;
@@ -321,6 +325,11 @@ export interface TicketDetailsDto {
 
   driverName: string;
 
+  firstWeightOperatorId: string | null;
+  firstWeightOperatorName: string | null;
+  secondWeightOperatorId: string | null;
+  secondWeightOperatorName: string | null;
+
   firstWeight: number;
   firstWeighType: FirstWeighType;
   firstWeightDateTime: string;
@@ -368,6 +377,7 @@ export interface CreateOneGoWeighmentRequest {
   captureVehicleImage: boolean;
   captureOperatorImage: boolean;
   printRequested: boolean;
+  operatorId?: string | null;
 }
 
 export interface CreateOneGoWeighmentResult {
@@ -496,4 +506,23 @@ export interface ScaleActionResponse {
   keys?: string;
   timestamp?: string;
   message?: string;
+}
+
+// ─── Operators ────────────────────────────────────────────────────────────────
+
+export interface Operator {
+  id: string;
+  siteId: number;
+  name: string;
+  isDeleted: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+export interface CreateOperatorRequest {
+  id?: string | null;
+  siteId: number;
+  name: string;
 }

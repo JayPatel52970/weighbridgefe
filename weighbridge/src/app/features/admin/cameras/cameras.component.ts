@@ -3,6 +3,8 @@ import { finalize } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { CameraSettings, CameraKind, CameraProtocol } from '../../../core/models';
 
+const USB_DEFAULTS = { url: '0', username: undefined, password: undefined, snapshotPath: undefined, timeoutSeconds: undefined };
+
 @Component({
   selector: 'app-cameras',
   templateUrl: './cameras.component.html',
@@ -35,10 +37,12 @@ export class CamerasComponent implements OnInit {
     this.error = '';
     this.editCamera = cam ? { ...cam } : {
       siteId: this.siteId, kind: CameraKind.Vehicle,
-      enabled: true, protocol: CameraProtocol.HttpSnapshot,
+      isEnabled: true, protocol: CameraProtocol.HttpPoll,
       timeoutSeconds: 5, storageFolder: 'tickets'
     };
   }
+
+  isUsb(): boolean { return this.editCamera?.protocol === CameraProtocol.UsbCapture; }
 
   save(): void {
     if (!this.editCamera) return;

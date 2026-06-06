@@ -12,7 +12,8 @@ import {
   VehicleTypeConfig, UpsertVehicleTypeRequest,
   PrinterSettings, UpsertPrinterSettingsRequest,
   UpsertClientRequest,
-  IndicatorSettings, UpdateIndicatorSettingsRequest, ScaleHealthResponse, ScaleActionResponse
+  IndicatorSettings, UpdateIndicatorSettingsRequest, ScaleHealthResponse, ScaleActionResponse,
+  Operator, CreateOperatorRequest
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -71,6 +72,9 @@ export class ApiService {
   }
   getTicketByNumber(ticketNumber: string, siteId: number): Observable<TicketDetailsDto> {
     return this.http.get<TicketDetailsDto>(`${this.base}/api/tickets/by-number/${encodeURIComponent(ticketNumber)}`, { params: { siteId } });
+  }
+  getTicket(id: string, siteId: number): Observable<TicketDetailsDto> {
+    return this.http.get<TicketDetailsDto>(`${this.base}/api/tickets/${encodeURIComponent(id)}`, { params: { siteId } });
   }
   oneGoWeighment(req: CreateOneGoWeighmentRequest): Observable<CreateOneGoWeighmentResult> {
     return this.http.post<CreateOneGoWeighmentResult>(`${this.base}/api/tickets/one-go`, req);
@@ -237,6 +241,22 @@ export class ApiService {
   }
   getScaleHealth(): Observable<ScaleHealthResponse> {
     return this.http.get<ScaleHealthResponse>(`${this.base}/api/scale/health`);
+  }
+
+  // ─── Operators ────────────────────────────────────────────────────────────
+  listOperators(siteId: number, skip = 0, take = 500): Observable<Operator[]> {
+    return this.http.get<Operator[]>(`${this.base}/api/master/operators`, {
+      params: new HttpParams().set('siteId', siteId).set('skip', skip).set('take', take)
+    });
+  }
+  createOperator(req: CreateOperatorRequest): Observable<Operator> {
+    return this.http.post<Operator>(`${this.base}/api/master/operators`, req);
+  }
+  updateOperator(id: string, req: { siteId: number; name: string }): Observable<Operator> {
+    return this.http.put<Operator>(`${this.base}/api/master/operators/${id}`, req);
+  }
+  deleteOperator(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/api/master/operators/${id}`);
   }
 
   // ─── Printer Settings ──────────────────────────────────────────────────────

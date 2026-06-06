@@ -1,0 +1,434 @@
+<!-- ═══ Main Backdrop ══════════════════════════════════════════════════════ -->
+<div class="tl-back">
+  <div class="tl-panel">
+
+    <!-- ─── Header ──────────────────────────────────────────────────────── -->
+    <div class="tl-head">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <i class="bi bi-ticket-perforated-fill text-success fs-5"></i>
+        <span class="fw-semibold">Ticket List</span>
+        <span class="badge bg-light text-dark border" style="font-weight:500">
+          {{ activeFromLabel }} &rarr; {{ activeToLabel }}
+        </span>
+        @if (activeVehicleLabel) {
+          <span class="badge bg-info text-dark">
+            <i class="bi bi-truck me-1"></i>{{ activeVehicleLabel }}
+          </span>
+        }
+        @if (activeOperatorLabel) {
+          <span class="badge bg-primary">
+            <i class="bi bi-person-badge me-1"></i>{{ activeOperatorLabel }}
+          </span>
+        }
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <small class="text-muted d-none d-lg-inline">
+          <kbd>↑↓</kbd> Navigate &nbsp;·&nbsp;
+          <kbd>Enter</kbd> View &nbsp;·&nbsp;
+          <kbd>Ctrl+F</kbd> Filter &nbsp;·&nbsp;
+          <kbd>F7 / Esc</kbd> Close
+        </small>
+        <button class="btn-close" (click)="closed.emit()" title="Close"></button>
+      </div>
+    </div>
+
+    <!-- ─── Table ───────────────────────────────────────────────────────── -->
+    <div class="tl-body">
+      @if (loading) {
+        <div class="text-center p-5">
+          <div class="spinner-border text-success"></div>
+          <div class="text-muted small mt-2">Loading tickets…</div>
+        </div>
+      } @else {
+        <table class="table table-sm mb-0 tl-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ticket</th>
+              <th>Vehicle</th>
+              <th>Status</th>
+              <th>Gross</th>
+              <th>Tare</th>
+              <th>Net</th>
+              <th>Operator</th>
+              <th>Charges</th>
+              <th>Date / Time</th>
+              <th>Client</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of filteredTickets; track t.ticketId; let i = $index) {
+              <tr id="tl-row-{{ i }}" class="tl-row-btn"
+                  [class.tl-highlight]="highlightIndex === i"
+                  (click)="clickRow(i)">
+                <td class="text-muted" style="font-size:.76rem">{{ t.serialNumber }}</td>
+                <td class="fw-semibold text-success" style="white-space:nowrap">{{ t.ticketNumber }}</td>
+                <td><span class="badge bg-secondary">{{ t.vehicleLicensePlate }}</span></td>
+                <td>
+                  <span class="badge {{ statusClass(t.status) }}" style="font-size:.72rem">
+                    {{ statusLabel(t.status) }}
+                  </span>
+                </td>
+                <td style="white-space:nowrap">
+                  @if (grossOf(t) != null) {
+                    {{ grossOf(t) | number:'1.0-0' }}
+                    <span class="text-muted" style="font-size:.72rem"> kg</span>
+                  } @else { <span class="text-muted">—</span> }
+                </td>
+                <td style="white-space:nowrap">
+                  @if (tareOf(t) != null) {
+                    {{ tareOf(t) | number:'1.0-0' }}
+                    <span class="text-muted" style="font-size:.72rem"> kg</span>
+                  } @else { <span class="text-muted">—</span> }
+                </td>
+                <td style="white-space:nowrap">
+                  @if (t.netWeight != null) {
+                    <span class="fw-semibold">{{ t.netWeight | number:'1.0-0' }}</span>
+                    <span class="text-muted" style="font-size:.72rem"> kg</span>
+                  } @else { <span class="text-muted">—</span> }
+                </td>
+                <td class="text-muted" style="font-size:.76rem">—</td>
+                <td style="white-space:nowrap">₹ {{ t.totalCharges | number }}</td>
+                <td class="text-muted" style="font-size:.76rem;white-space:nowrap">
+                  {{ t.firstWeightDateTime | date:'dd/MM/yy HH:mm' }}
+                </td>
+                <td class="text-muted" style="font-size:.76rem">{{ t.clientName || '—' }}</td>
+              </tr>
+            }
+            @if (!filteredTickets.length) {
+              <tr>
+                <td colspan="11" class="text-center text-muted py-5">
+                  <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
+                  No tickets found for this range
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- ─── Footer bar ───────────────────────────────────────────────────── -->
+    @if (!loading) {
+      <div class="tl-foot-bar">
+        {{ filteredTickets.length }} ticket{{ filteredTickets.length !== 1 ? 's' : '' }}
+        @if (filteredTickets.length !== allTickets.length) {
+          &nbsp;(filtered from {{ allTickets.length }})
+        }
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- ═══ Filter Sub-Popup ════════════════════════════════════════════════ -->
+@if (showFilter) {
+  <div class="tl-sub-back">
+    <div class="tl-filter-card">
+
+      <div class="tl-filter-head">
+        <i class="bi bi-funnel-fill"></i>
+        <span class="fw-semibold">Filter Tickets</span>
+        <button class="btn-close btn-close-white ms-auto" (click)="showFilter = false"></button>
+      </div>
+
+      <!-- 1 · Start Date -->
+      <div class="fs-row" [class.active]="filterStep === 'startDate'" [class.done]="filterStepDone('startDate')">
+        <div class="fs-num">{{ filterStepDone('startDate') ? '✓' : '1' }}</div>
+        <div class="fs-body">
+          <div class="fs-lbl">Start Date</div>
+          @if (filterStep === 'startDate') {
+            <input id="tl-flt-startDate" type="text" class="form-control form-control-sm mt-1" autocomplete="off"
+              placeholder="dd/mm/yyyy  ·  d.m.yy  ·  d-m-yy"
+              [(ngModel)]="filterStartDateRaw"
+              (keydown.enter)="onFilterStartDateEnter()">
+            @if (filterDateError) { <div class="fs-err">{{ filterDateError }}</div> }
+            <div class="fs-hint"><kbd>Enter</kbd> confirm</div>
+          } @else {
+            <div class="fs-val">{{ filterStartDateRaw }}</div>
+          }
+        </div>
+      </div>
+      <hr class="m-0">
+
+      <!-- 2 · End Date -->
+      <div class="fs-row" [class.active]="filterStep === 'endDate'" [class.done]="filterStepDone('endDate')">
+        <div class="fs-num">{{ filterStepDone('endDate') ? '✓' : '2' }}</div>
+        <div class="fs-body">
+          <div class="fs-lbl">End Date</div>
+          @if (filterStep === 'endDate') {
+            <input id="tl-flt-endDate" type="text" class="form-control form-control-sm mt-1" autocomplete="off"
+              placeholder="dd/mm/yyyy  ·  d.m.yy  ·  d-m-yy"
+              [(ngModel)]="filterEndDateRaw"
+              (keydown.enter)="onFilterEndDateEnter()">
+            @if (filterDateError) { <div class="fs-err">{{ filterDateError }}</div> }
+            <div class="fs-hint"><kbd>Enter</kbd> confirm</div>
+          } @else {
+            <div class="fs-val">{{ filterEndDateRaw }}</div>
+          }
+        </div>
+      </div>
+      <hr class="m-0">
+
+      <!-- 3 · Operator -->
+      <div class="fs-row" [class.active]="filterStep === 'operator'" [class.done]="filterStepDone('operator')">
+        <div class="fs-num">{{ filterStepDone('operator') ? '✓' : '3' }}</div>
+        <div class="fs-body">
+          <div class="fs-lbl">
+            Operator
+            <span class="text-muted" style="text-transform:none;font-weight:400"> — optional</span>
+          </div>
+          @if (filterStep === 'operator') {
+            <div class="position-relative mt-1">
+              <input id="tl-flt-operator" type="text" class="form-control form-control-sm" autocomplete="off"
+                placeholder="Search or press Enter to skip"
+                [value]="filterOperatorSearch"
+                (focus)="onFilterOperatorFocus()"
+                (input)="onFilterOperatorInput($any($event.target).value)"
+                (keydown.enter)="onFilterOperatorEnter()"
+                (keydown.arrowdown)="$event.preventDefault(); onFilterOperatorArrow(1)"
+                (keydown.arrowup)="$event.preventDefault(); onFilterOperatorArrow(-1)">
+              @if (filterOperatorSuggestions.length) {
+                <div class="list-group position-absolute w-100 shadow"
+                     style="z-index:400;top:100%;max-height:160px;overflow-y:auto">
+                  @for (op of filterOperatorSuggestions; track op.id; let i = $index) {
+                    <button type="button" class="list-group-item list-group-item-action py-2"
+                      [class.active]="filterOperatorHighlight === i"
+                      (click)="selectFilterOperator(op)">{{ op.name }}</button>
+                  }
+                </div>
+              }
+            </div>
+            <div class="fs-hint"><kbd>↑↓</kbd> list &nbsp;·&nbsp; <kbd>Enter</kbd> select or skip</div>
+          } @else {
+            <div class="fs-val">{{ filterOperatorSearch || '—' }}</div>
+          }
+        </div>
+      </div>
+      <hr class="m-0">
+
+      <!-- 4 · Vehicle Number -->
+      <div class="fs-row" [class.active]="filterStep === 'vehicle'" [class.done]="filterStepDone('vehicle')">
+        <div class="fs-num">{{ filterStepDone('vehicle') ? '✓' : '4' }}</div>
+        <div class="fs-body">
+          <div class="fs-lbl">
+            Vehicle Number
+            <span class="text-muted" style="text-transform:none;font-weight:400"> — optional, partial ok</span>
+          </div>
+          @if (filterStep === 'vehicle') {
+            <input id="tl-flt-vehicle" type="text" class="form-control form-control-sm mt-1 text-uppercase"
+              autocomplete="off"
+              placeholder="e.g. GJ01AB or full plate"
+              [(ngModel)]="filterVehicle"
+              (keydown.enter)="applyFilter()">
+            <div class="fs-hint"><kbd>Enter</kbd> apply filter &amp; close</div>
+          } @else {
+            <div class="fs-val">{{ filterVehicle || '—' }}</div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ═══ Ticket Detail Sub-Popup ══════════════════════════════════════════ -->
+@if (showDetail) {
+  <div class="tl-sub-back" (click)="showDetail = false">
+    <div class="tl-detail-card" (click)="$event.stopPropagation()">
+
+      @if (detailLoading) {
+        <div class="text-center p-5">
+          <div class="spinner-border text-success"></div>
+          <div class="text-muted small mt-2">Loading ticket…</div>
+        </div>
+      } @else if (detailError) {
+        <div class="p-4 text-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ detailError }}
+        </div>
+        <div class="tl-detail-foot">
+          <button class="btn btn-sm btn-secondary" (click)="showDetail = false">Close</button>
+        </div>
+      } @else if (detailTicket) {
+
+        <!-- ─── Header ──────────────────────────────────────────────────── -->
+        <div class="tl-detail-head">
+          <div class="d-flex align-items-start justify-content-between gap-2">
+            <div>
+              <div class="fw-bold" style="font-size:1.25rem;letter-spacing:-.01em">{{ detailTicket.ticketNumber }}</div>
+              <div style="opacity:.8;font-size:.78rem">#{{ detailTicket.serialNumber }}</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge {{ statusClass(detailTicket.status) }}" style="font-size:.8rem;padding:.35em .75em">
+                {{ statusLabel(detailTicket.status) }}
+              </span>
+              <button class="btn-close btn-close-white" (click)="showDetail = false"></button>
+            </div>
+          </div>
+
+          <!-- Info chips -->
+          <div class="d-flex flex-wrap gap-1 mt-2">
+            <span class="chip"><i class="bi bi-truck"></i> {{ detailTicket.vehicleLicensePlate }}
+              @if (detailTicket.vehicleTypeDisplayName) { &nbsp;· {{ detailTicket.vehicleTypeDisplayName }} }
+            </span>
+            @if (detailTicket.clientName) {
+              <span class="chip"><i class="bi bi-building"></i> {{ detailTicket.clientName }}</span>
+            }
+            @if (detailTicket.materialName) {
+              <span class="chip"><i class="bi bi-box"></i> {{ detailTicket.materialName }}</span>
+            }
+            @if (detailTicket.driverName) {
+              <span class="chip"><i class="bi bi-person"></i> {{ detailTicket.driverName }}</span>
+            }
+          </div>
+        </div>
+
+        <!-- ─── Body ───────────────────────────────────────────────────── -->
+        <div class="tl-detail-body">
+
+          <!-- Side-by-side weighment cards -->
+          <div class="row g-2">
+
+            <!-- First Weighment -->
+            <div class="col-6">
+              <div class="wm-card wm-card-1">
+                <div class="wm-ch">
+                  <i class="bi bi-1-circle-fill"></i>&nbsp;First Weighment
+                  <span class="badge bg-primary ms-1" style="font-size:.58rem">
+                    {{ weighTypeName(detailTicket.firstWeighType) }}
+                  </span>
+                </div>
+                <div class="wm-wt">{{ detailTicket.firstWeight | number:'1.0-0' }} <span class="wm-wt-unit">kg</span></div>
+                <div class="wm-dt"><i class="bi bi-clock me-1"></i>{{ detailTicket.firstWeightDateTime | date:'dd/MM/yyyy HH:mm' }}</div>
+                @if (detailTicket.firstWeightOperatorName) {
+                  <div class="wm-op"><i class="bi bi-person-badge me-1"></i>{{ detailTicket.firstWeightOperatorName }}</div>
+                }
+                @if (detailTicket.firstWeightVehicleImageUrl || detailTicket.firstWeightOperatorImageUrl) {
+                  <div class="d-flex gap-2 mt-2 flex-wrap">
+                    @if (detailTicket.firstWeightVehicleImageUrl) {
+                      <div class="wm-img-wrap">
+                        <img [src]="detailTicket.firstWeightVehicleImageUrl" class="wm-img"
+                          (error)="$any($event.target).style.display='none'"
+                          (click)="openImg(detailTicket.firstWeightVehicleImageUrl)" title="Vehicle photo">
+                        <div class="wm-img-lbl"><i class="bi bi-truck"></i> Vehicle</div>
+                      </div>
+                    }
+                    @if (detailTicket.firstWeightOperatorImageUrl) {
+                      <div class="wm-img-wrap">
+                        <img [src]="detailTicket.firstWeightOperatorImageUrl" class="wm-img"
+                          (error)="$any($event.target).style.display='none'"
+                          (click)="openImg(detailTicket.firstWeightOperatorImageUrl)" title="Operator photo">
+                        <div class="wm-img-lbl"><i class="bi bi-person-badge"></i> Operator</div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Second Weighment -->
+            <div class="col-6">
+              @if (detailTicket.secondWeight != null) {
+                <div class="wm-card wm-card-2">
+                  <div class="wm-ch">
+                    <i class="bi bi-2-circle-fill"></i>&nbsp;Second Weighment
+                    <span class="badge bg-success ms-1" style="font-size:.58rem">
+                      {{ detailTicket.firstWeighType === FirstWeighType.Gross ? 'Tare' : 'Gross' }}
+                    </span>
+                  </div>
+                  <div class="wm-wt">{{ detailTicket.secondWeight | number:'1.0-0' }} <span class="wm-wt-unit">kg</span></div>
+                  <div class="wm-dt"><i class="bi bi-clock me-1"></i>{{ detailTicket.secondWeightDateTime | date:'dd/MM/yyyy HH:mm' }}</div>
+                  @if (detailTicket.secondWeightOperatorName) {
+                    <div class="wm-op"><i class="bi bi-person-badge me-1"></i>{{ detailTicket.secondWeightOperatorName }}</div>
+                  }
+                  @if (detailTicket.secondWeightVehicleImageUrl || detailTicket.secondWeightOperatorImageUrl) {
+                    <div class="d-flex gap-2 mt-2 flex-wrap">
+                      @if (detailTicket.secondWeightVehicleImageUrl) {
+                        <div class="wm-img-wrap">
+                          <img [src]="detailTicket.secondWeightVehicleImageUrl" class="wm-img"
+                            (error)="$any($event.target).style.display='none'"
+                            (click)="openImg(detailTicket.secondWeightVehicleImageUrl)" title="Vehicle photo">
+                          <div class="wm-img-lbl"><i class="bi bi-truck"></i> Vehicle</div>
+                        </div>
+                      }
+                      @if (detailTicket.secondWeightOperatorImageUrl) {
+                        <div class="wm-img-wrap">
+                          <img [src]="detailTicket.secondWeightOperatorImageUrl" class="wm-img"
+                            (error)="$any($event.target).style.display='none'"
+                            (click)="openImg(detailTicket.secondWeightOperatorImageUrl)" title="Operator photo">
+                          <div class="wm-img-lbl"><i class="bi bi-person-badge"></i> Operator</div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="wm-card wm-card-pending">
+                  <i class="bi bi-hourglass-split fs-3 mb-2"></i>
+                  <div style="font-size:.8rem;font-weight:600">Awaiting 2nd Weighment</div>
+                </div>
+              }
+            </div>
+
+          </div>
+
+          <!-- Net weight banner -->
+          @if (detailTicket.netWeight != null) {
+            <div class="net-banner">
+              <div class="net-item">
+                <div class="net-item-lbl">Net Weight</div>
+                <div class="net-item-val big">{{ detailTicket.netWeight | number:'1.0-0' }} kg</div>
+              </div>
+              <div class="net-sep"></div>
+              <div class="net-item">
+                <div class="net-item-lbl">Gross</div>
+                <div class="net-item-val">{{ detailTicket.grossWeight | number:'1.0-0' }} kg</div>
+              </div>
+              <div class="net-sep"></div>
+              <div class="net-item">
+                <div class="net-item-lbl">Tare</div>
+                <div class="net-item-val">{{ detailTicket.tareWeight | number:'1.0-0' }} kg</div>
+              </div>
+            </div>
+          }
+
+          <!-- Payment strip -->
+          <div class="pay-strip">
+            <div class="pay-cell">
+              <div class="pay-lbl">Charges</div>
+              <div class="pay-val">₹ {{ detailTicket.totalCharges | number }}</div>
+            </div>
+            <div class="pay-cell">
+              <div class="pay-lbl">Paid</div>
+              <div class="pay-val">₹ {{ detailTicket.amountPaid | number }}</div>
+            </div>
+            <div class="pay-cell">
+              <div class="pay-lbl">Status</div>
+              <div class="pay-val">{{ detailTicket.paymentStatus }}</div>
+            </div>
+            <div class="pay-cell">
+              <div class="pay-lbl">Mode</div>
+              <div class="pay-val">{{ payModeName(detailTicket.paymentMode) }}</div>
+            </div>
+          </div>
+
+          <!-- Audit bar -->
+          <div class="audit-bar">
+            <span>Created by <strong>{{ detailTicket.createdBy }}</strong> on {{ detailTicket.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            @if (detailTicket.updatedBy && detailTicket.updatedAt) {
+              <span>Updated by <strong>{{ detailTicket.updatedBy }}</strong> on {{ detailTicket.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            }
+          </div>
+
+        </div>
+
+        <div class="tl-detail-foot">
+          <button class="btn btn-sm btn-secondary" (click)="showDetail = false">
+            <i class="bi bi-x me-1"></i>Close
+          </button>
+        </div>
+
+      }
+    </div>
+  </div>
+}

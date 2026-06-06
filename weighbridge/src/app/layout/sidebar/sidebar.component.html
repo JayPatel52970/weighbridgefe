@@ -68,6 +68,13 @@
         </li>
 
         <li class="nav-item">
+          <a class="nav-link" style="cursor:pointer" (click)="openTicketLookup()">
+            <i class="nav-icon bi bi-ticket-perforated"></i>
+            <p>Ticket Lookup <span class="badge bg-info float-end">F7</span></p>
+          </a>
+        </li>
+
+        <li class="nav-item">
           <a routerLink="/reports" routerLinkActive="active" class="nav-link">
             <i class="nav-icon bi bi-bar-chart"></i>
             <p>Reports</p>
@@ -151,6 +158,11 @@
           <li class="nav-item">
             <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">
               <i class="nav-icon bi bi-people"></i><p>Users</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/master/operators" routerLinkActive="active" class="nav-link">
+              <i class="nav-icon bi bi-person-badge"></i><p>Operators</p>
             </a>
           </li>
           <li class="nav-item">
